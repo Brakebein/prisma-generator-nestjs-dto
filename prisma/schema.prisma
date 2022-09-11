@@ -19,6 +19,7 @@ generator nestjsDto {
   classValidation                 = "true"
   noDependencies                  = "false"
   outputType                      = "class"
+  prettier                        = "true"
 }
 
 model Product {

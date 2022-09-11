@@ -3,6 +3,7 @@ import path from 'node:path';
 import makeDir from 'make-dir';
 import { generatorHandler } from '@prisma/generator-helper';
 import { parseEnvValue } from '@prisma/sdk';
+import prettier from 'prettier';
 
 import { run } from './generator';
 
@@ -20,7 +21,7 @@ export const stringToBoolean = (input: string, defaultValue = false) => {
   return defaultValue;
 };
 
-export const generate = (options: GeneratorOptions) => {
+export const generate = async (options: GeneratorOptions) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const output = parseEnvValue(options.generator.output!);
 
@@ -121,6 +122,35 @@ export const generate = (options: GeneratorOptions) => {
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};
 
+  const applyPrettier = stringToBoolean(
+    options.generator.config.prettier,
+    false,
+  );
+
+  let prettierConfig: prettier.Options = {};
+  if (applyPrettier) {
+    const prettierConfigFile = await prettier.resolveConfigFile(process.cwd());
+    if (!prettierConfigFile) {
+      console.log('Stylizing output DTOs with the default Prettier config.');
+    } else {
+      console.log(
+        `Stylizing output DTOs with found Prettier config. (${prettierConfigFile})`,
+      );
+    }
+
+    if (prettierConfigFile) {
+      const resolvedConfig = await prettier.resolveConfig(prettierConfigFile, {
+        config: prettierConfigFile,
+      });
+
+      if (resolvedConfig) prettierConfig = resolvedConfig;
+    }
+
+    // Ensures that there are no parsing issues
+    // We know that the output files are always Typescript
+    prettierConfig.parser = 'typescript';
+  }
+
   if (reExport) {
     results.forEach(({ fileName }) => {
       const dirName = path.dirname(fileName);
@@ -141,6 +171,9 @@ export const generate = (options: GeneratorOptions) => {
       .concat(Object.values(indexCollections))
       .map(async ({ fileName, content }) => {
         await makeDir(path.dirname(fileName));
+
+        if (applyPrettier) content = prettier.format(content, prettierConfig);
+
         return fs.writeFile(fileName, content);
       }),
   );

@@ -8,10 +8,12 @@
     "email": "bk@vegardit.com",
     "url": "https://vegardit.com/"
   },
-  "contributors": [{
-    "name": "Brakebein",
-    "url": "https://github.com/Brakebein"
-  }],
+  "contributors": [
+    {
+      "name": "Brakebein",
+      "url": "https://github.com/Brakebein"
+    }
+  ],
   "main": "dist/index.js",
   "keywords": [
     "prisma",
@@ -56,6 +58,7 @@
     "@prisma/sdk": "^3.2.1",
     "case": "^1.6.3",
     "make-dir": "^3.1.0",
+    "prettier": "^2.7.1",
     "slash": "^3.0.0",
     "tar": "^6.1.11"
   },
@@ -68,7 +71,6 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.2.4",
-    "prettier": "^2.4.1",
     "prisma": "^3.2.1",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.0.5",
