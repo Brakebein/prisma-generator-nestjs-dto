@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import makeDir from 'make-dir';
 import { generatorHandler } from '@prisma/generator-helper';
-import { parseEnvValue } from '@prisma/sdk';
+import { parseEnvValue, logger } from '@prisma/sdk';
 import prettier from 'prettier';
 
 import { run } from './generator';
@@ -131,9 +131,9 @@ export const generate = async (options: GeneratorOptions) => {
   if (applyPrettier) {
     const prettierConfigFile = await prettier.resolveConfigFile(process.cwd());
     if (!prettierConfigFile) {
-      console.log('Stylizing output DTOs with the default Prettier config.');
+      logger.info('Stylizing output DTOs with the default Prettier config.');
     } else {
-      console.log(
+      logger.info(
         `Stylizing output DTOs with found Prettier config. (${prettierConfigFile})`,
       );
     }
