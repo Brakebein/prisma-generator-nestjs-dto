@@ -8,12 +8,10 @@
     "email": "bk@vegardit.com",
     "url": "https://vegardit.com/"
   },
-  "contributors": [
-    {
+  "contributors": [{
       "name": "Brakebein",
       "url": "https://github.com/Brakebein"
-    }
-  ],
+    }],
   "main": "dist/index.js",
   "keywords": [
     "prisma",

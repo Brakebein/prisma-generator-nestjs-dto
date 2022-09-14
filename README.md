@@ -18,9 +18,9 @@ These classes can also be used with the built-in [ValidationPipe](https://docs.n
 
 This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/vegardit/prisma-generator-nestjs-dto) and adds multiple features:
 
-- enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
-- optionally add [validation decorators](#validation-decorators)
-- control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
+* enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
+* optionally add [validation decorators](#validation-decorators)
+* control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
 
 ### ToDo
 
@@ -71,7 +71,7 @@ All parameters are optional.
 - [`classValidation`]: (default: `"false"`) - Add validation decorators from `class-validator`. Not compatible with `noDependencies = "true"` and `outputType = "interface"`.
 - [`noDependencies`]: (default: `"false"`) - Any imports and decorators that are specific to NestJS and Prisma are omitted, such that there are no references to external dependencies. This is useful if you want to generate appropriate DTOs for the frontend.
 - [`outputType`]: (default: `"class"`) - Output the DTOs as `class` or as `interface`. `interface` should only be used to generate DTOs for the frontend.
-- [`prettier`]: (default: `"false"`) - Should the output files should be stylized with Prettier?
+- [`prettier`]: (default: `"false"`) - Stylize output files with prettier.
 
 ## Annotations
 
@@ -110,24 +110,24 @@ To enhance a field with additional schema information, add the schema property p
 
 Currently, following schema properties are supported:
 
-- `description`
-- `minimum`
-- `maximum`
-- `exclusiveMinimum`
-- `exclusiveMaximum`
-- `minLength`
-- `maxLength`
-- `minItems`
-- `maxItems`
-- `example`
+* `description`
+* `minimum`
+* `maximum`
+* `exclusiveMinimum`
+* `exclusiveMaximum`
+* `minLength`
+* `maxLength`
+* `minItems`
+* `maxItems`
+* `example`
 
 Additionally, special data types are inferred and annotated as well:
 
-- `Int: { type: 'integer', format: 'int32' }`
-- `BigInt: { type: 'integer', format: 'int64' }`
-- `Float: { type: 'number', format: 'float' }`
-- `Decimal: { type: 'number', format: 'double' }`
-- `DateTime: { type: 'string', format: 'date-time' }`
+* `Int: { type: 'integer', format: 'int32' }`
+* `BigInt: { type: 'integer', format: 'int64' }`
+* `Float: { type: 'number', format: 'float' }`
+* `Decimal: { type: 'number', format: 'double' }`
+* `DateTime: { type: 'string', format: 'date-time' }`
 
 #### Example
 
@@ -152,7 +152,7 @@ reviewCount: number;
 ```
 
 Default values are added in `CreateDTO` and `UpdateDTO`.
-However, a field with a `@default()` attribute is hidden by default in `CreateDTO` and `UpdateDTO`,
+However, a field with a `@default()` attribute is hidden by default  in `CreateDTO` and `UpdateDTO`,
 hence requires `@DtoCreateOptional` and/or `@DtoUpdateOptional` to be present.
 
 ### Validation decorators
@@ -164,14 +164,14 @@ If the field is optional, it will add `@IsOptional()`, otherwise `@IsNotEmpty()`
 If the field is a list, it will add `@IsArray()`.
 Type validators are inferred from the field's type:
 
-- `String` &rarr; `@IsString()`
-- `Boolean` &rarr; `@IsBoolean()`
-- `Int` &rarr; `@IsInt()`
-- `BigInt` &rarr; `@IsInt()`
-- `Float:` &rarr; `@IsNumber()`
-- `Decimal:` &rarr; `@IsNumber()`
-- `DateTime` &rarr; `@IsRFC3339()`
-- `Json` &rarr; `@IsJSON()`
+* `String` &rarr; `@IsString()`
+* `Boolean` &rarr; `@IsBoolean()`
+* `Int` &rarr; `@IsInt()`
+* `BigInt` &rarr; `@IsInt()`
+* `Float:` &rarr; `@IsNumber()`
+* `Decimal:` &rarr; `@IsNumber()`
+* `DateTime` &rarr; `@IsRFC3339()`
+* `Json` &rarr; `@IsJSON()`
 
 All remaining [validation decorators](https://github.com/typestack/class-validator#validation-decorators) can be added in the comment/documentation section above the field.
 The parentheses can be omitted if not passing a value.
@@ -222,16 +222,16 @@ outputToNestJsResourceStructure = "true"
 }
 
 model Question {
-id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-/// @DtoReadOnly
-createdAt DateTime @default(now())
-/// @DtoRelationRequired
-createdBy User? @relation("CreatedQuestions", fields: [createdById], references: [id])
-createdById String? @db.Uuid
-updatedAt DateTime @updatedAt
-/// @DtoRelationRequired
-updatedBy User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
-updatedById String? @db.Uuid
+    id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    /// @DtoReadOnly
+    createdAt   DateTime @default(now())
+    /// @DtoRelationRequired
+    createdBy   User? @relation("CreatedQuestions", fields: [createdById], references: [id])
+    createdById String? @db.Uuid
+    updatedAt   DateTime @updatedAt
+    /// @DtoRelationRequired
+    updatedBy   User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
+    updatedById String? @db.Uuid
 
     /// @DtoRelationRequired
     /// @DtoRelationCanConnectOnCreate
