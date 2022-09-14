@@ -9,9 +9,9 @@
     "url": "https://vegardit.com/"
   },
   "contributors": [{
-      "name": "Brakebein",
-      "url": "https://github.com/Brakebein"
-    }],
+    "name": "Brakebein",
+    "url": "https://github.com/Brakebein"
+  }],
   "main": "dist/index.js",
   "keywords": [
     "prisma",

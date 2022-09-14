@@ -102,7 +102,7 @@ model Post {
 With `@nestjs/swagger`, you can generate an API specification from code.
 Routes, request bodies, query parameters, etc., are annotated with special decorators.
 Properties can be annotated with the `@ApiProperty()` decorator to add schema object information.
-They are partially added at runtime, which will then include `type`, `nullable`, etc.
+They are partially added at runtime, which will then include `type`, `nullable`, etc. 
 But additional information, such as description, need to be added manually.
 
 If using a generator like this, any custom `@ApiProperty()` annotation would be overridden when updating the DTOs.
