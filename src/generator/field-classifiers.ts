@@ -81,7 +81,7 @@ export const isReadOnly = (field: DMMF.Field): boolean =>
   field.isReadOnly || isAnnotatedWith(field, DTO_READ_ONLY);
 
 export const isUpdatedAt = (field: DMMF.Field): boolean => {
-  return field.isUpdatedAt;
+  return !!field.isUpdatedAt;
 };
 
 /**

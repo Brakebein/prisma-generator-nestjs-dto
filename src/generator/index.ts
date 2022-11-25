@@ -1,6 +1,5 @@
 import path from 'node:path';
 import { camel, pascal, kebab, snake } from 'case';
-import { logger } from '@prisma/internals';
 import { makeHelpers } from './template-helpers';
 import { computeModelParams } from './compute-model-params';
 import { computeTypeParams } from './compute-type-params';
@@ -12,8 +11,8 @@ import { generatePlainDto } from './generate-plain-dto';
 import { DTO_IGNORE_MODEL } from './annotations';
 import { isAnnotatedWith } from './field-classifiers';
 
-import type { DMMF } from '@prisma/generator-helper';
 import { NamingStyle, Model, WriteableFileSpecs } from './types';
+import { DMMF } from '@prisma/generator-helper';
 
 interface RunParam {
   output: string;
@@ -31,11 +30,14 @@ interface RunParam {
   classValidation: boolean;
   outputType: string;
   noDependencies: boolean;
+  logger?: (message: string) => void;
 }
 
 export const run = ({
   output,
   dmmf,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  logger = () => {},
   ...options
 }: RunParam): WriteableFileSpecs[] => {
   const {
@@ -70,7 +72,7 @@ export const run = ({
 
   const filteredTypes: Model[] = dmmf.datamodel.types
     .filter((model) => !isAnnotatedWith(model, DTO_IGNORE_MODEL))
-    .map((model) => ({
+    .map((model: DMMF.Model) => ({
       ...model,
       output: {
         dto: outputToNestJsResourceStructure
@@ -104,7 +106,7 @@ export const run = ({
     }));
 
   const typeFiles = filteredTypes.map((model) => {
-    logger.info(`Processing Type ${model.name}`);
+    logger(`Processing Type ${model.name}`);
 
     const typeParams = computeTypeParams({
       model,
@@ -154,7 +156,7 @@ export const run = ({
   });
 
   const modelFiles = filteredModels.map((model) => {
-    logger.info(`Processing Model ${model.name}`);
+    logger(`Processing Model ${model.name}`);
 
     const modelParams = computeModelParams({
       model,

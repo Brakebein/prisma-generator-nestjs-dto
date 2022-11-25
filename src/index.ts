@@ -2,15 +2,14 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import makeDir from 'make-dir';
 import { generatorHandler } from '@prisma/generator-helper';
-import { parseEnvValue } from '@prisma/internals';
 import prettier from 'prettier';
-
+import { parseEnvValue } from './util';
 import { run } from './generator';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
 import type { WriteableFileSpecs, NamingStyle } from './generator/types';
 
-export const stringToBoolean = (input: string, defaultValue = false) => {
+const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
     return true;
   }
@@ -118,6 +117,7 @@ export const generate = async (options: GeneratorOptions) => {
     classValidation,
     outputType,
     noDependencies,
+    logger: console.log,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};
