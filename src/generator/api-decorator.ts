@@ -68,7 +68,7 @@ function extractAnnotation(
  */
 function encapsulateString(value: string): string {
   return /^$|^(?!true$|false$)[^0-9\[]/.test(value)
-    ? `'${value.replaceAll(/'/g, "\\'")}'`
+    ? `'${value.replace(/'/g, "\\'")}'`
     : value;
 }
 
