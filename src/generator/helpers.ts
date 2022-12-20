@@ -19,6 +19,7 @@ import type {
 } from './types';
 import { parseApiProperty } from './api-decorator';
 import { parseClassValidators } from './class-validator';
+import { DTO_CAST_TYPE } from './annotations';
 
 export const uniq = <T = any>(input: T[]): T[] => Array.from(new Set(input));
 export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
@@ -43,22 +44,74 @@ export function concatUniqueIntoArray<T = any>(
 
 export const makeImportsFromPrismaClient = (
   fields: ParsedField[],
-): ImportStatementParams | null => {
+): ImportStatementParams[] => {
   const enumsToImport = uniq(
     fields.filter(({ kind }) => kind === 'enum').map(({ type }) => type),
   );
   const importPrisma = fields
     .filter(({ kind }) => kind === 'scalar')
-    .some(({ type }) => scalarToTS(type).includes('Prisma'));
+    .some(
+      ({ type, documentation }) =>
+        !isAnnotatedWith({ documentation }, DTO_CAST_TYPE) &&
+        scalarToTS(type).includes('Prisma'),
+    );
 
-  if (!(enumsToImport.length || importPrisma)) {
-    return null;
-  }
+  const prismaImport =
+    enumsToImport.length || importPrisma
+      ? [
+          {
+            from: '@prisma/client',
+            destruct: importPrisma
+              ? ['Prisma', ...enumsToImport]
+              : enumsToImport,
+          },
+        ]
+      : [];
 
-  return {
-    from: '@prisma/client',
-    destruct: importPrisma ? ['Prisma', ...enumsToImport] : enumsToImport,
-  };
+  // Walk the fields for any that have a DTOCastType annotation that
+  // requires a custom import to be appended.
+  const customImports = fields.flatMap(({ documentation }) => {
+    const castType = isAnnotatedWith({ documentation }, DTO_CAST_TYPE, {
+      returnAnnotationParameters: true,
+    });
+    if (!castType || !castType.includes(',')) {
+      return [];
+    }
+
+    const [importAs, importFrom, importWas] = castType
+      .split(',')
+      .map((s) => s.trim());
+
+    if (!importFrom) {
+      throw new Error(
+        "Invalid DTOCastType annotation. Requesting import but did not provide 'from' value.",
+      );
+    }
+
+    if (!importWas || importWas === importAs) {
+      return {
+        from: importFrom,
+        destruct: [importAs],
+      };
+    } else if (importWas === 'default') {
+      return {
+        from: importFrom,
+        default: importAs,
+      };
+    } else if (importWas === '*') {
+      return {
+        from: importFrom,
+        default: { '*': importAs },
+      };
+    } else {
+      return {
+        from: importFrom,
+        destruct: [{ [importWas]: importAs }],
+      };
+    }
+  });
+
+  return [...prismaImport, ...customImports];
 };
 
 export const mapDMMFToParsedField = (

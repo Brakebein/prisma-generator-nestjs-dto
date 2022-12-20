@@ -28,3 +28,4 @@ export const DTO_RELATION_MODIFIERS_ON_UPDATE = [
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
 ];
 export const DTO_TYPE_FULL_UPDATE = /@DtoTypeFullUpdate/;
+export const DTO_CAST_TYPE = /@DtoCastType/;

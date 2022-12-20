@@ -2,8 +2,8 @@ import { DMMF } from '@prisma/generator-helper';
 import { ImportStatementParams, ParsedField } from './types';
 import { decorateApiProperty } from './api-decorator';
 import { decorateClassValidators } from './class-validator';
-import { isAnnotatedWith, isType } from './field-classifiers';
-import { DTO_TYPE_FULL_UPDATE } from './annotations';
+import { isAnnotatedWith, isScalar, isType } from './field-classifiers';
+import { DTO_CAST_TYPE, DTO_TYPE_FULL_UPDATE } from './annotations';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
   String: 'string',
@@ -170,14 +170,22 @@ export const makeHelpers = ({
       dtoType === 'update' &&
       isType(field as DMMF.Field) &&
       isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
+
+    const castType =
+      (isType(field as DMMF.Field) || isScalar(field as DMMF.Field)) &&
+      isAnnotatedWith(field as DMMF.Field, DTO_CAST_TYPE, {
+        returnAnnotationParameters: true,
+      });
+
     return `${
-      field.kind === 'scalar'
+      castType ||
+      (field.kind === 'scalar'
         ? scalarToTS(field.type, toInputType)
         : field.kind === 'enum' || field.kind === 'relation-input'
         ? field.type
         : field.relationName
         ? entityName(field.type)
-        : dtoName(field.type, doFullUpdate ? 'create' : dtoType)
+        : dtoName(field.type, doFullUpdate ? 'create' : dtoType))
     }${when(field.isList, '[]')}`;
   };
 

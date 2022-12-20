@@ -181,12 +181,11 @@ export const computeEntityParams = ({
   }
 
   const importPrismaClient = makeImportsFromPrismaClient(fields);
-  if (importPrismaClient) imports.unshift(importPrismaClient);
 
   return {
     model,
     fields,
-    imports: zipImportStatementParams(imports),
+    imports: zipImportStatementParams([...importPrismaClient, ...imports]),
     apiExtraModels,
   };
 };

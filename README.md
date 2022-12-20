@@ -18,11 +18,11 @@ These classes can also be used with the built-in [ValidationPipe](https://docs.n
 
 This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/vegardit/prisma-generator-nestjs-dto) and adds multiple features:
 
-* enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
-* optionally add [validation decorators](#validation-decorators)
-* support for composite types
-* control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
-* optionally auto-format output with prettier
+- enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
+- optionally add [validation decorators](#validation-decorators)
+- support for composite types
+- control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
+- optionally auto-format output with prettier
 
 ### ToDo
 
@@ -84,6 +84,8 @@ model Post {
   /// @DtoCreateOptional
   /// @DtoUpdateHidden
   createdAt   DateTime @default(now())
+  /// @DtoCastType(DurationLike, luxon)
+  timeUntilExpires Json?
 }
 ```
 
@@ -99,6 +101,11 @@ model Post {
 - `@DtoRelationCanConnectOnUpdate` - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `UpdateDTO` - useful when you want/need to connect to an existing related instance
 - `@DtoRelationIncludeId` - include ID of a relation field that is otherwise omitted (use instead of `CanCreate`/`CanConnect` annotations, if you just want to pass the IDs)
 - `@DtoTypeFullUpdate` - in the generated `UpdateDTO`, use the `CreateDTO` of the composite type to enforce a complete replacement the old values (see [#2](https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460))
+- `@DtoCastType(...)` - in all the generated entities, forces a provided type for this field. Especially useful if you need to cast Json fields at read/write. Note, you must provide at least one and may provide up to 3 arguments in the `(...)` with this annotation - the first is the name of the type to force for this field, the second and third can be used to add an `import` for that type at the top of the entity file. For example:
+  - `@DtoCastType(MyType)` will cast the field as `MyType` but add no import
+  - `@DtoCastType(MyType, some-package)` will cast the field as `MyType` and add `import {MyType} from "some-package"`
+  - `@DtoCastType(MyType, ../types, default)` will cast and add `import MyType from "../types"`
+  - `@DtoCastType(MyTypeInterface, ../types, MyType)` will cast as `MyTypeInterface` and add `import {MyType as MyTypeInterface} from "../types"`
 
 ### Schema Object annotations
 
@@ -113,24 +120,24 @@ To enhance a field with additional schema information, add the schema property p
 
 Currently, following schema properties are supported:
 
-* `description`
-* `minimum`
-* `maximum`
-* `exclusiveMinimum`
-* `exclusiveMaximum`
-* `minLength`
-* `maxLength`
-* `minItems`
-* `maxItems`
-* `example`
+- `description`
+- `minimum`
+- `maximum`
+- `exclusiveMinimum`
+- `exclusiveMaximum`
+- `minLength`
+- `maxLength`
+- `minItems`
+- `maxItems`
+- `example`
 
 Additionally, special data types are inferred and annotated as well:
 
-* `Int: { type: 'integer', format: 'int32' }`
-* `BigInt: { type: 'integer', format: 'int64' }`
-* `Float: { type: 'number', format: 'float' }`
-* `Decimal: { type: 'number', format: 'double' }`
-* `DateTime: { type: 'string', format: 'date-time' }`
+- `Int: { type: 'integer', format: 'int32' }`
+- `BigInt: { type: 'integer', format: 'int64' }`
+- `Float: { type: 'number', format: 'float' }`
+- `Decimal: { type: 'number', format: 'double' }`
+- `DateTime: { type: 'string', format: 'date-time' }`
 
 #### Example
 
@@ -167,13 +174,13 @@ If the field is optional, it will add `@IsOptional()`, otherwise `@IsNotEmpty()`
 If the field is a list, it will add `@IsArray()`.
 Type validators are inferred from the field's type:
 
-* `String` &rarr; `@IsString()`
-* `Boolean` &rarr; `@IsBoolean()`
-* `Int` &rarr; `@IsInt()`
-* `BigInt` &rarr; `@IsInt()`
-* `Float:` &rarr; `@IsNumber()`
-* `Decimal:` &rarr; `@IsDecimal()`
-* `DateTime` &rarr; `@IsDateString()`
+- `String` &rarr; `@IsString()`
+- `Boolean` &rarr; `@IsBoolean()`
+- `Int` &rarr; `@IsInt()`
+- `BigInt` &rarr; `@IsInt()`
+- `Float:` &rarr; `@IsNumber()`
+- `Decimal:` &rarr; `@IsDecimal()`
+- `DateTime` &rarr; `@IsDateString()`
 
 All remaining [validation decorators](https://github.com/typestack/class-validator#validation-decorators) can be added in the comment/documentation section above the field.
 The parentheses can be omitted if not passing a value.
@@ -223,34 +230,35 @@ generator nestjsDto {
 }
 
 model Question {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  /// @DtoReadOnly
-  createdAt   DateTime @default(now())
-  /// @DtoRelationRequired
-  createdBy   User? @relation("CreatedQuestions", fields: [createdById], references: [id])
-  createdById String? @db.Uuid
-  updatedAt   DateTime @updatedAt
-  /// @DtoRelationRequired
-  updatedBy   User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
-  updatedById String? @db.Uuid
+id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+/// @DtoReadOnly
+createdAt DateTime @default(now())
+/// @DtoRelationRequired
+createdBy User? @relation("CreatedQuestions", fields: [createdById], references: [id])
+createdById String? @db.Uuid
+updatedAt DateTime @updatedAt
+/// @DtoRelationRequired
+updatedBy User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
+updatedById String? @db.Uuid
 
-  /// @DtoRelationRequired
-  /// @DtoRelationCanConnectOnCreate
-  category   Category? @relation(fields: [categoryId], references: [id])
-  categoryId String?   @db.Uuid
+/// @DtoRelationRequired
+/// @DtoRelationCanConnectOnCreate
+category Category? @relation(fields: [categoryId], references: [id])
+categoryId String? @db.Uuid
 
-  /// @DtoCreateOptional
-  /// @DtoRelationCanCreateOnCreate
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanCreateOnUpdate
-  /// @DtoRelationCanConnectOnUpdate
-  tags Tag[]
+/// @DtoCreateOptional
+/// @DtoRelationCanCreateOnCreate
+/// @DtoRelationCanConnectOnCreate
+/// @DtoRelationCanCreateOnUpdate
+/// @DtoRelationCanConnectOnUpdate
+tags Tag[]
 
-  title     String
-  content   String
-  responses Response[]
+title String
+content String
+responses Response[]
 }
-```
+
+````
 
 </details>
 
@@ -262,7 +270,7 @@ model Question {
 export class ConnectQuestionDto {
   id: string;
 }
-```
+````
 
 ```ts
 // src/question/dto/create-question.dto.ts

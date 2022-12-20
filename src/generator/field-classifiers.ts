@@ -1,13 +1,39 @@
 import { DTO_READ_ONLY } from './annotations';
 import type { DMMF } from '@prisma/generator-helper';
 
-export const isAnnotatedWith = (
-  instance: DMMF.Field | DMMF.Model,
+const ANNOTATION_PARAMS_REGEX = /(?:\(([_A-Za-z0-9\-\, ]*)\))?/;
+
+export function isAnnotatedWith(
+  instance: Pick<DMMF.Field | DMMF.Model, 'documentation'>,
   annotation: RegExp,
-): boolean => {
+  options?: { returnAnnotationParameters?: false },
+): boolean;
+export function isAnnotatedWith(
+  instance: Pick<DMMF.Field | DMMF.Model, 'documentation'>,
+  annotation: RegExp,
+  options: { returnAnnotationParameters: true },
+): false | string;
+export function isAnnotatedWith(
+  instance: Pick<DMMF.Field | DMMF.Model, 'documentation'>,
+  annotation: RegExp,
+  options?: { returnAnnotationParameters?: boolean },
+): boolean | string {
   const { documentation = '' } = instance;
-  return annotation.test(documentation);
-};
+  if (!options?.returnAnnotationParameters) {
+    return annotation.test(documentation);
+  } else {
+    const annotationAndParams = new RegExp(
+      annotation.source + ANNOTATION_PARAMS_REGEX.source,
+      annotation.flags,
+    );
+    const match = annotationAndParams.exec(documentation);
+    if (match === null || match.length < 2) {
+      return false;
+    } else {
+      return match[1] ?? '';
+    }
+  }
+}
 
 export const isAnnotatedWithOneOf = (
   instance: DMMF.Field | DMMF.Model,
