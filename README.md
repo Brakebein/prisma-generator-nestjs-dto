@@ -18,11 +18,11 @@ These classes can also be used with the built-in [ValidationPipe](https://docs.n
 
 This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/vegardit/prisma-generator-nestjs-dto) and adds multiple features:
 
-- enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
-- optionally add [validation decorators](#validation-decorators)
-- support for composite types
-- control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
-- optionally auto-format output with prettier
+* enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
+* optionally add [validation decorators](#validation-decorators)
+* support for composite types
+* control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
+* optionally auto-format output with prettier
 
 ### ToDo
 
@@ -120,24 +120,24 @@ To enhance a field with additional schema information, add the schema property p
 
 Currently, following schema properties are supported:
 
-- `description`
-- `minimum`
-- `maximum`
-- `exclusiveMinimum`
-- `exclusiveMaximum`
-- `minLength`
-- `maxLength`
-- `minItems`
-- `maxItems`
-- `example`
+* `description`
+* `minimum`
+* `maximum`
+* `exclusiveMinimum`
+* `exclusiveMaximum`
+* `minLength`
+* `maxLength`
+* `minItems`
+* `maxItems`
+* `example`
 
 Additionally, special data types are inferred and annotated as well:
 
-- `Int: { type: 'integer', format: 'int32' }`
-- `BigInt: { type: 'integer', format: 'int64' }`
-- `Float: { type: 'number', format: 'float' }`
-- `Decimal: { type: 'number', format: 'double' }`
-- `DateTime: { type: 'string', format: 'date-time' }`
+* `Int: { type: 'integer', format: 'int32' }`
+* `BigInt: { type: 'integer', format: 'int64' }`
+* `Float: { type: 'number', format: 'float' }`
+* `Decimal: { type: 'number', format: 'double' }`
+* `DateTime: { type: 'string', format: 'date-time' }`
 
 #### Example
 
@@ -174,13 +174,13 @@ If the field is optional, it will add `@IsOptional()`, otherwise `@IsNotEmpty()`
 If the field is a list, it will add `@IsArray()`.
 Type validators are inferred from the field's type:
 
-- `String` &rarr; `@IsString()`
-- `Boolean` &rarr; `@IsBoolean()`
-- `Int` &rarr; `@IsInt()`
-- `BigInt` &rarr; `@IsInt()`
-- `Float:` &rarr; `@IsNumber()`
-- `Decimal:` &rarr; `@IsDecimal()`
-- `DateTime` &rarr; `@IsDateString()`
+* `String` &rarr; `@IsString()`
+* `Boolean` &rarr; `@IsBoolean()`
+* `Int` &rarr; `@IsInt()`
+* `BigInt` &rarr; `@IsInt()`
+* `Float:` &rarr; `@IsNumber()`
+* `Decimal:` &rarr; `@IsDecimal()`
+* `DateTime` &rarr; `@IsDateString()`
 
 All remaining [validation decorators](https://github.com/typestack/class-validator#validation-decorators) can be added in the comment/documentation section above the field.
 The parentheses can be omitted if not passing a value.
@@ -230,35 +230,34 @@ generator nestjsDto {
 }
 
 model Question {
-id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-/// @DtoReadOnly
-createdAt DateTime @default(now())
-/// @DtoRelationRequired
-createdBy User? @relation("CreatedQuestions", fields: [createdById], references: [id])
-createdById String? @db.Uuid
-updatedAt DateTime @updatedAt
-/// @DtoRelationRequired
-updatedBy User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
-updatedById String? @db.Uuid
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// @DtoReadOnly
+  createdAt   DateTime @default(now())
+  /// @DtoRelationRequired
+  createdBy   User? @relation("CreatedQuestions", fields: [createdById], references: [id])
+  createdById String? @db.Uuid
+  updatedAt   DateTime @updatedAt
+  /// @DtoRelationRequired
+  updatedBy   User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
+  updatedById String? @db.Uuid
 
-/// @DtoRelationRequired
-/// @DtoRelationCanConnectOnCreate
-category Category? @relation(fields: [categoryId], references: [id])
-categoryId String? @db.Uuid
+  /// @DtoRelationRequired
+  /// @DtoRelationCanConnectOnCreate
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?   @db.Uuid
 
-/// @DtoCreateOptional
-/// @DtoRelationCanCreateOnCreate
-/// @DtoRelationCanConnectOnCreate
-/// @DtoRelationCanCreateOnUpdate
-/// @DtoRelationCanConnectOnUpdate
-tags Tag[]
+  /// @DtoCreateOptional
+  /// @DtoRelationCanCreateOnCreate
+  /// @DtoRelationCanConnectOnCreate
+  /// @DtoRelationCanCreateOnUpdate
+  /// @DtoRelationCanConnectOnUpdate
+  tags Tag[]
 
-title String
-content String
-responses Response[]
+  title     String
+  content   String
+  responses Response[]
 }
-
-````
+```
 
 </details>
 
@@ -270,7 +269,7 @@ responses Response[]
 export class ConnectQuestionDto {
   id: string;
 }
-````
+```
 
 ```ts
 // src/question/dto/create-question.dto.ts
