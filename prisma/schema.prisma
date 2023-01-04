@@ -40,7 +40,12 @@ model Product {
   type        ProductType
   /// @ArrayNotEmpty
   tags        String[]
+  /// @DtoCastType(MyType, my-package)
   attributes  Json?
+  /// @DtoCastType(OtherType, other-package, default)
+  otherAttributes Json
+  /// @DtoCastType(OtherType, other-package, default)
+  finalAttributes Json?
   score       Float?
   lastOrder   DateTime?
   /// @DtoCreateOptional

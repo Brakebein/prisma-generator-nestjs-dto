@@ -171,11 +171,13 @@ export const makeHelpers = ({
       isType(field as DMMF.Field) &&
       isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
 
-    const castType =
+    const rawCastType =
       (isType(field as DMMF.Field) || isScalar(field as DMMF.Field)) &&
       isAnnotatedWith(field as DMMF.Field, DTO_CAST_TYPE, {
         returnAnnotationParameters: true,
       });
+
+    const castType = rawCastType ? rawCastType.split(',')[0] : undefined;
 
     return `${
       castType ||

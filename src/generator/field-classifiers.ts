@@ -19,6 +19,7 @@ export function isAnnotatedWith(
   options?: { returnAnnotationParameters?: boolean },
 ): boolean | string {
   const { documentation = '' } = instance;
+
   if (!options?.returnAnnotationParameters) {
     return annotation.test(documentation);
   } else {
@@ -26,7 +27,9 @@ export function isAnnotatedWith(
       annotation.source + ANNOTATION_PARAMS_REGEX.source,
       annotation.flags,
     );
+
     const match = annotationAndParams.exec(documentation);
+
     if (match === null || match.length < 2) {
       return false;
     } else {

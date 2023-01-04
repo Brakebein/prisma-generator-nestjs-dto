@@ -403,7 +403,7 @@ export const mergeImportStatements = (
     );
   }
 
-  if (first.default && second.default) {
+  if (first.default && second.default && first.default !== second.default) {
     throw new Error(
       `Can not merge import statements; both statements have set the 'default' preoperty`,
     );
