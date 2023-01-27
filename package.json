@@ -36,7 +36,8 @@
     "cleanup:generated": "rimraf src/@generated",
     "pregenerate": "npm run cleanup:generated",
     "generate": "npx prisma generate && npm run format -- --loglevel error",
-    "generate:mongo": "npx prisma generate --schema ./prisma/mongodb.prisma && npm run format -- --loglevel error"
+    "generate:mongo": "npx prisma generate --schema ./prisma/mongodb.prisma && npm run format -- --loglevel error",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",

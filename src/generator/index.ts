@@ -30,6 +30,7 @@ interface RunParam {
   classValidation: boolean;
   outputType: string;
   noDependencies: boolean;
+  prismaClientImportPath: string;
 }
 
 export const run = ({
@@ -45,6 +46,7 @@ export const run = ({
     classValidation,
     outputType,
     noDependencies,
+    prismaClientImportPath,
     ...preAndSuffixes
   } = options;
 
@@ -63,6 +65,7 @@ export const run = ({
     classValidation,
     outputType,
     noDependencies,
+    prismaClientImportPath,
     ...preAndSuffixes,
   });
   const allModels = dmmf.datamodel.models;

@@ -89,6 +89,28 @@ export const generate = async (options: GeneratorOptions) => {
     false,
   );
 
+  const prismaClientGenerator = options.otherGenerators.find(
+    (config) => config.name === 'client',
+  );
+  const prismaClientOutputPath = prismaClientGenerator?.output?.value;
+  let prismaClientImportPath = '@prisma/client';
+  if (
+    prismaClientOutputPath &&
+    !prismaClientOutputPath.endsWith(
+      ['node_modules', '@prisma', 'client'].join(path.sep),
+    )
+  ) {
+    const withStructure = outputToNestJsResourceStructure
+      ? flatResourceStructure
+        ? '../'
+        : '../../'
+      : '';
+    prismaClientImportPath =
+      './' +
+      withStructure +
+      path.relative(output, prismaClientOutputPath).replace('\\', '/');
+  }
+
   if (classValidation && outputType !== 'class') {
     throw new Error(
       `To use 'validation' validation decorators, 'outputType' must be 'class'.`,
@@ -117,6 +139,7 @@ export const generate = async (options: GeneratorOptions) => {
     classValidation,
     outputType,
     noDependencies,
+    prismaClientImportPath,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};

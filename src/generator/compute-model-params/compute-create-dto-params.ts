@@ -232,7 +232,10 @@ export const computeCreateDtoParams = ({
     });
   }
 
-  const importPrismaClient = makeImportsFromPrismaClient(fields);
+  const importPrismaClient = makeImportsFromPrismaClient(
+    fields,
+    templateHelpers.config.prismaClientImportPath,
+  );
 
   return {
     model,

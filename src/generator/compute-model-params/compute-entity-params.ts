@@ -180,7 +180,10 @@ export const computeEntityParams = ({
     imports.unshift({ from: '@nestjs/swagger', destruct });
   }
 
-  const importPrismaClient = makeImportsFromPrismaClient(fields);
+  const importPrismaClient = makeImportsFromPrismaClient(
+    fields,
+    templateHelpers.config.prismaClientImportPath,
+  );
 
   return {
     model,

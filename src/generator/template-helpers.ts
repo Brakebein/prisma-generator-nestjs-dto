@@ -97,6 +97,7 @@ interface MakeHelpersParam {
   classValidation: boolean;
   outputType: string;
   noDependencies: boolean;
+  prismaClientImportPath: string;
 }
 export const makeHelpers = ({
   connectDtoPrefix,
@@ -110,6 +111,7 @@ export const makeHelpers = ({
   classValidation,
   outputType,
   noDependencies,
+  prismaClientImportPath,
 }: MakeHelpersParam) => {
   const className = (name: string, prefix = '', suffix = '') =>
     `${prefix}${transformClassNameCase(name)}${suffix}`;
@@ -240,6 +242,7 @@ export const makeHelpers = ({
       classValidation,
       outputType,
       noDependencies,
+      prismaClientImportPath,
     },
     apiExtraModels,
     entityName,
