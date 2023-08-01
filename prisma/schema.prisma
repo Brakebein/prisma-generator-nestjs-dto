@@ -73,6 +73,7 @@ model Product {
   /// @DtoRelationCanCreateOnCreate
   /// @DtoRelationCanConnectOnUpdate
   /// @DtoRelationCanCreateOnUpdate
+  /// @DtoRelationCanDisconnectOnUpdate
   company Company @relation(fields: [companyId], references: [id])
 
   /// @DtoRelationIncludeId

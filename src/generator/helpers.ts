@@ -225,6 +225,7 @@ interface GenerateRelationInputParam {
     | TemplateHelpers['updateDtoName'];
   canCreateAnnotation: RegExp;
   canConnectAnnotation: RegExp;
+  canDisconnectAnnotation: RegExp;
 }
 export const generateRelationInput = ({
   field,
@@ -234,6 +235,7 @@ export const generateRelationInput = ({
   preAndSuffixClassName,
   canCreateAnnotation,
   canConnectAnnotation,
+  canDisconnectAnnotation,
 }: GenerateRelationInputParam) => {
   const relationInputClassProps: Array<
     Pick<ParsedField, 'name' | 'type' | 'apiProperties' | 'classValidators'>
@@ -246,6 +248,7 @@ export const generateRelationInput = ({
 
   const createRelation = isAnnotatedWith(field, canCreateAnnotation);
   const connectRelation = isAnnotatedWith(field, canConnectAnnotation);
+  const disconnectRelation = isAnnotatedWith(field, canDisconnectAnnotation);
   const isRequired = !(createRelation && connectRelation);
 
   if (createRelation) {
@@ -302,7 +305,7 @@ export const generateRelationInput = ({
     });
   }
 
-  if (connectRelation) {
+  if (connectRelation || disconnectRelation) {
     const preAndPostfixedName = t.connectDtoName(field.type);
     apiExtraModels.push(preAndPostfixedName);
     const modelToImportFrom = allModels.find(({ name }) => name === field.type);
@@ -347,12 +350,22 @@ export const generateRelationInput = ({
       });
     }
 
-    relationInputClassProps.push({
-      name: 'connect',
-      type: preAndPostfixedName,
-      apiProperties: decorators.apiProperties,
-      classValidators: decorators.classValidators,
-    });
+    if (connectRelation) {
+      relationInputClassProps.push({
+        name: 'connect',
+        type: preAndPostfixedName,
+        apiProperties: decorators.apiProperties,
+        classValidators: decorators.classValidators,
+      });
+    }
+    if (disconnectRelation) {
+      relationInputClassProps.push({
+        name: 'disconnect',
+        type: preAndPostfixedName,
+        apiProperties: decorators.apiProperties,
+        classValidators: decorators.classValidators,
+      });
+    }
   }
 
   if (!relationInputClassProps.length) {

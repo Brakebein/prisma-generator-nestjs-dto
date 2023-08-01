@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
   DTO_RELATION_CAN_CREATE_ON_UPDATE,
+  DTO_RELATION_CAN_DISCONNECT_ON_UPDATE,
   DTO_RELATION_INCLUDE_ID,
   DTO_RELATION_MODIFIERS_ON_UPDATE,
   DTO_TYPE_FULL_UPDATE,
@@ -91,6 +92,7 @@ export const computeUpdateDtoParams = ({
         preAndSuffixClassName: templateHelpers.updateDtoName,
         canCreateAnnotation: DTO_RELATION_CAN_CREATE_ON_UPDATE,
         canConnectAnnotation: DTO_RELATION_CAN_CONNECT_ON_UPDATE,
+        canDisconnectAnnotation: DTO_RELATION_CAN_DISCONNECT_ON_UPDATE,
       });
 
       overrides.type = relationInputType.type;
