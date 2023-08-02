@@ -249,7 +249,10 @@ export const generateRelationInput = ({
   const createRelation = isAnnotatedWith(field, canCreateAnnotation);
   const connectRelation = isAnnotatedWith(field, canConnectAnnotation);
   const disconnectRelation = isAnnotatedWith(field, canDisconnectAnnotation);
-  const isRequired = !(createRelation && connectRelation);
+  // should the validation require the relation field to exist
+  // this should only be true in cases where only one relation field is generated
+  // for multiple relaiton fields, e.g. create AND connect, each should be optional
+  const isRequired = !(createRelation && connectRelation && disconnectRelation);
 
   if (createRelation) {
     const preAndPostfixedName = t.createDtoName(field.type);
