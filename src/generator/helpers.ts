@@ -310,7 +310,7 @@ export const generateRelationInput = ({
     });
   }
 
-  if (connectRelation || disconnectRelation) {
+  if (connectRelation) {
     const preAndPostfixedName = t.connectDtoName(field.type);
     apiExtraModels.push(preAndPostfixedName);
     const modelToImportFrom = allModels.find(({ name }) => name === field.type);
@@ -355,15 +355,95 @@ export const generateRelationInput = ({
       });
     }
 
-    if (connectRelation) {
+    relationInputClassProps.push({
+      name: 'connect',
+      type: preAndPostfixedName,
+      apiProperties: decorators.apiProperties,
+      classValidators: decorators.classValidators,
+    });
+  }
+
+  if (disconnectRelation) {
+    if (!field.isList) {
+      const decorators: {
+        apiProperties?: IApiProperty[];
+        classValidators?: IClassValidator[];
+      } = {};
+
+      if (t.config.classValidation) {
+        decorators.classValidators = parseClassValidators(
+          { ...field, isRequired },
+          'Boolean',
+        );
+        concatUniqueIntoArray(
+          decorators.classValidators,
+          classValidators,
+          'name',
+        );
+      }
+
+      if (!t.config.noDependencies) {
+        decorators.apiProperties = parseApiProperty({ ...field, isRequired });
+        decorators.apiProperties.push({
+          name: 'type',
+          value: 'Boolean',
+          noEncapsulation: true,
+        });
+      }
+
       relationInputClassProps.push({
-        name: 'connect',
-        type: preAndPostfixedName,
+        name: 'disconnect',
+        type: 'boolean',
         apiProperties: decorators.apiProperties,
         classValidators: decorators.classValidators,
       });
-    }
-    if (disconnectRelation) {
+    } else {
+      const preAndPostfixedName = t.connectDtoName(field.type);
+      apiExtraModels.push(preAndPostfixedName);
+      const modelToImportFrom = allModels.find(
+        ({ name }) => name === field.type,
+      );
+
+      if (!modelToImportFrom)
+        throw new Error(
+          `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+        );
+
+      imports.push({
+        from: slash(
+          `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+            path.sep
+          }${t.connectDtoFilename(field.type)}`,
+        ),
+        destruct: [preAndPostfixedName],
+      });
+
+      const decorators: {
+        apiProperties?: IApiProperty[];
+        classValidators?: IClassValidator[];
+      } = {};
+
+      if (t.config.classValidation) {
+        decorators.classValidators = parseClassValidators(
+          { ...field, isRequired },
+          preAndPostfixedName,
+        );
+        concatUniqueIntoArray(
+          decorators.classValidators,
+          classValidators,
+          'name',
+        );
+      }
+
+      if (!t.config.noDependencies) {
+        decorators.apiProperties = parseApiProperty({ ...field, isRequired });
+        decorators.apiProperties.push({
+          name: 'type',
+          value: preAndPostfixedName,
+          noEncapsulation: true,
+        });
+      }
+
       relationInputClassProps.push({
         name: 'disconnect',
         type: preAndPostfixedName,
