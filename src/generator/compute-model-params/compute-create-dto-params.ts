@@ -89,7 +89,6 @@ export const computeCreateDtoParams = ({
         preAndSuffixClassName: templateHelpers.createDtoName,
         canCreateAnnotation: DTO_RELATION_CAN_CREATE_ON_CREATE,
         canConnectAnnotation: DTO_RELATION_CAN_CONNECT_ON_CREATE,
-        canDisconnectAnnotation: DTO_RELATION_CAN_DISCONNECT_ON_UPDATE,
       });
 
       const isDtoRelationRequired = isAnnotatedWith(

@@ -225,7 +225,7 @@ interface GenerateRelationInputParam {
     | TemplateHelpers['updateDtoName'];
   canCreateAnnotation: RegExp;
   canConnectAnnotation: RegExp;
-  canDisconnectAnnotation: RegExp;
+  canDisconnectAnnotation?: RegExp;
 }
 export const generateRelationInput = ({
   field,
@@ -248,7 +248,9 @@ export const generateRelationInput = ({
 
   const createRelation = isAnnotatedWith(field, canCreateAnnotation);
   const connectRelation = isAnnotatedWith(field, canConnectAnnotation);
-  const disconnectRelation = isAnnotatedWith(field, canDisconnectAnnotation);
+  const disconnectRelation = canDisconnectAnnotation
+    ? isAnnotatedWith(field, canDisconnectAnnotation)
+    : undefined;
   // should the validation require the relation field to exist
   // this should only be true in cases where only one relation field is generated
   // for multiple relaiton fields, e.g. create AND connect, each should be optional
