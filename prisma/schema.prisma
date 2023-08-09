@@ -73,11 +73,11 @@ model Product {
   /// @DtoRelationCanCreateOnCreate
   /// @DtoRelationCanConnectOnUpdate
   /// @DtoRelationCanCreateOnUpdate
-  /// @DtoRelationCanDisconnectOnUpdate
   company Company @relation(fields: [companyId], references: [id])
 
   /// @DtoRelationIncludeId
   photoId String?
+  /// @DtoRelationCanDisconnectOnUpdate
   photo   Photo?  @relation(fields: [photoId], references: [id])
 
   /// @DtoEntityHidden
@@ -107,6 +107,7 @@ model Category {
 
 model Company {
   id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// @DtoRelationCanDisconnectOnUpdate
   product Product[]
 
   companyUserRoles CompanyUserRole[]

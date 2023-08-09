@@ -366,6 +366,12 @@ export const generateRelationInput = ({
   }
 
   if (disconnectRelation) {
+    if (field.isRequired && !field.isList) {
+      throw new Error(
+        `The disconnect annotation is not supported for required field '${model.name}.${field.name}'`,
+      );
+    }
+
     if (!field.isList) {
       const decorators: {
         apiProperties?: IApiProperty[];
