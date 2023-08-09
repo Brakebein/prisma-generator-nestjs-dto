@@ -7,6 +7,8 @@ import {
   DTO_RELATION_INCLUDE_ID,
   DTO_RELATION_MODIFIERS_ON_UPDATE,
   DTO_TYPE_FULL_UPDATE,
+  DTO_UPDATE_HIDDEN,
+  DTO_UPDATE_API_RESP,
   DTO_UPDATE_OPTIONAL,
 } from '../annotations';
 import {
@@ -54,6 +56,7 @@ export const computeUpdateDtoParams = ({
   templateHelpers,
 }: ComputeUpdateDtoParamsParam): UpdateDtoParams => {
   let hasApiProperty = false;
+  let hasApiRespProperty = false;
   const imports: ImportStatementParams[] = [];
   const extraClasses: string[] = [];
   const apiExtraModels: string[] = [];
@@ -67,6 +70,7 @@ export const computeUpdateDtoParams = ({
     const overrides: Partial<DMMF.Field> = {
       isRequired: false,
       isNullable: !field.isRequired,
+      updateApiResp: false,
     };
     const decorators: {
       apiProperties?: IApiProperty[];
@@ -79,6 +83,7 @@ export const computeUpdateDtoParams = ({
     )
       field.isReadOnly = false;
 
+    if (isAnnotatedWith(field, DTO_UPDATE_HIDDEN)) return result;
     if (isReadOnly(field)) return result;
     if (isRelation(field)) {
       if (!isAnnotatedWithOneOf(field, DTO_RELATION_MODIFIERS_ON_UPDATE)) {
@@ -190,6 +195,8 @@ export const computeUpdateDtoParams = ({
     }
 
     if (!templateHelpers.config.noDependencies) {
+      overrides.updateApiResp = isAnnotatedWith(field, DTO_UPDATE_API_RESP);
+      hasApiRespProperty = hasApiRespProperty || overrides.updateApiResp;
       decorators.apiProperties = parseApiProperty(
         {
           ...field,
@@ -217,10 +224,11 @@ export const computeUpdateDtoParams = ({
     return [...result, mapDMMFToParsedField(field, overrides, decorators)];
   }, [] as ParsedField[]);
 
-  if (apiExtraModels.length || hasApiProperty) {
+  if (apiExtraModels.length || hasApiProperty || hasApiRespProperty) {
     const destruct = [];
     if (apiExtraModels.length) destruct.push('ApiExtraModels');
     if (hasApiProperty) destruct.push('ApiProperty');
+    if (hasApiRespProperty) destruct.push('ApiResponseProperty');
     imports.unshift({ from: '@nestjs/swagger', destruct });
   }
 

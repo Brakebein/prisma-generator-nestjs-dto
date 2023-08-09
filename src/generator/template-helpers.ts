@@ -1,5 +1,5 @@
 import { DMMF } from '@prisma/generator-helper';
-import { ImportStatementParams, ParsedField } from './types';
+import { ImportStatementParams, ParsedField, isApiResp } from './types';
 import { decorateApiProperty } from './api-decorator';
 import { decorateClassValidators } from './class-validator';
 import { isAnnotatedWith, isScalar, isType } from './field-classifiers';
@@ -165,16 +165,7 @@ export const makeHelpers = ({
   const plainDtoFilename = (name: string, withExtension = false) =>
     fileName(name, undefined, '.dto', withExtension);
 
-  const fieldType = (
-    field: ParsedField,
-    dtoType: 'create' | 'update' | 'plain' = 'plain',
-    toInputType = false,
-  ) => {
-    const doFullUpdate =
-      dtoType === 'update' &&
-      isType(field as DMMF.Field) &&
-      isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
-
+  const getRawCastType = (field: ParsedField) => {
     const rawCastType =
       (isType(field as DMMF.Field) || isScalar(field as DMMF.Field)) &&
       isAnnotatedWith(field as DMMF.Field, DTO_CAST_TYPE, {
@@ -182,6 +173,19 @@ export const makeHelpers = ({
       });
 
     const castType = rawCastType ? rawCastType.split(',')[0] : undefined;
+    return castType;
+  };
+
+  const fieldType = (
+    field: ParsedField,
+    castType: string | undefined,
+    dtoType: 'create' | 'update' | 'plain' = 'plain',
+    toInputType = false,
+  ) => {
+    const doFullUpdate =
+      dtoType === 'update' &&
+      isType(field as DMMF.Field) &&
+      isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
 
     return `${
       castType ||
@@ -202,17 +206,22 @@ export const makeHelpers = ({
     dtoType: 'create' | 'update' | 'plain',
     useInputTypes = false,
     forceOptional = false,
-  ) =>
-    `${decorateApiProperty(field)}${decorateClassValidators(field)}${
-      field.name
-    }${unless(
+  ) => {
+    const castType = getRawCastType(field);
+    forceOptional || (forceOptional = isApiResp(field, dtoType));
+    return `${decorateApiProperty(
+      field,
+      castType,
+      dtoType,
+    )}${decorateClassValidators(field, dtoType)}${field.name}${unless(
       field.isRequired && !forceOptional,
       '?',
       when(definiteAssignmentAssertion, '!'),
-    )}: ${fieldType(field, dtoType, useInputTypes)} ${when(
+    )}: ${fieldType(field, castType, dtoType, useInputTypes)} ${when(
       field.isNullable,
       ' | null',
-    )};`;
+    )};\n`;
+  };
 
   const fieldsToDtoProps = (
     fields: ParsedField[],
@@ -226,12 +235,14 @@ export const makeHelpers = ({
       '\n',
     )}`;
 
-  const fieldToEntityProp = (field: ParsedField) =>
-    `${decorateApiProperty(field)}${field.name}${unless(
+  const fieldToEntityProp = (field: ParsedField) => {
+    const castType = getRawCastType(field);
+    return `${decorateApiProperty(field, castType)}${field.name}${unless(
       field.isRequired,
       '?',
       when(definiteAssignmentAssertion, '!'),
-    )}: ${fieldType(field)} ${when(field.isNullable, ' | null')};`;
+    )}: ${fieldType(field, castType)} ${when(field.isNullable, ' | null')};\n`;
+  };
 
   const fieldsToEntityProps = (fields: ParsedField[]) =>
     `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;

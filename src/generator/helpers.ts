@@ -19,7 +19,7 @@ import type {
 } from './types';
 import { parseApiProperty } from './api-decorator';
 import { parseClassValidators } from './class-validator';
-import { DTO_CAST_TYPE } from './annotations';
+import { DTO_CAST_TYPE, CUSTOM_VALIDATOR } from './annotations';
 
 export const uniq = <T = any>(input: T[]): T[] => Array.from(new Set(input));
 export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
@@ -69,14 +69,30 @@ export const makeImportsFromPrismaClient = (
         ]
       : [];
 
-  // Walk the fields for any that have a DTOCastType annotation that
-  // requires a custom import to be appended.
+  // Walk the fields for any that have a DTOCastType/CustomValidator
+  // annotation that requires a custom import to be appended.
   const customImports = fields.flatMap(({ documentation }) => {
+    const ret = [];
+    const customValidator = isAnnotatedWith(
+      { documentation },
+      CUSTOM_VALIDATOR,
+      { returnAnnotationParameters: true },
+    );
+    if (customValidator && customValidator.includes(',')) {
+      const cvs = customValidator.split(',').map((s) => s.trim());
+      if (cvs.length > 1) {
+        ret.push({
+          from: cvs[cvs.length - 1],
+          destruct: [cvs[0]],
+        });
+      }
+    }
+
     const castType = isAnnotatedWith({ documentation }, DTO_CAST_TYPE, {
       returnAnnotationParameters: true,
     });
     if (!castType || !castType.includes(',')) {
-      return [];
+      return ret;
     }
 
     const [importAs, importFrom, importWas] = castType
@@ -90,26 +106,27 @@ export const makeImportsFromPrismaClient = (
     }
 
     if (!importWas || importWas === importAs) {
-      return {
+      ret.push({
         from: importFrom,
         destruct: [importAs],
-      };
+      });
     } else if (importWas === 'default') {
-      return {
+      ret.push({
         from: importFrom,
         default: importAs,
-      };
+      });
     } else if (importWas === '*') {
-      return {
+      ret.push({
         from: importFrom,
         default: { '*': importAs },
-      };
+      });
     } else {
-      return {
+      ret.push({
         from: importFrom,
         destruct: [{ [importWas]: importAs }],
-      };
+      });
     }
+    return ret;
   });
 
   return [...prismaImport, ...customImports];

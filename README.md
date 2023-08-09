@@ -16,7 +16,7 @@ Generates `ConnectDTO`, `CreateDTO`, `UpdateDTO`, `DTO`, and `Entity` classes fo
 
 These classes can also be used with the built-in [ValidationPipe](https://docs.nestjs.com/techniques/validation#using-the-built-in-validationpipe) and [Serialization](https://docs.nestjs.com/techniques/serialization).
 
-This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/vegardit/prisma-generator-nestjs-dto) and adds multiple features:
+This is a fork of [@brakebein/prisma-generator-nestjs-dto](https://github.com/Brakebein/prisma-generator-nestjs-dto) and adds multiple features:
 
 * enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
 * optionally add [validation decorators](#validation-decorators)
@@ -97,6 +97,10 @@ model Post {
 - `@DtoEntityHidden` - omits field in `Entity`
 - `@DtoCreateOptional` - adds field **optionally** to `CreateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
 - `@DtoUpdateOptional` - adds field **optionally** to `UpdateDTO` - useful for fields that would otherwise be omitted (e.g. `@id`, `@updatedAt`)
+- @DtoCreateHidden - omits field in `CreateDTO`
+- @DtoUpdateHidden - omits field in `UpdateDTO`
+- `@DtoCreateApiResponse` - generate `@ApiResponseProperty()` and ignore all other annotations in `CreateDTO`
+- same for `DtoUpdateApiResponse` and `DtoPlainApiResponse`
 - `@DtoRelationRequired` - marks relation **required** in `Entity` although it's optional in PrismaSchema - useful when you don't want (SQL) `ON DELETE CASCADE` behavior - but your logical data schema sees this relation as required  
   (**Note**: becomes obsolete once [referentialActions](https://github.com/prisma/prisma/issues/7816) are released and stable)
 - `@DtoRelationCanCreateOnCreate` - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `CreateDTO` - useful when you want to allow to create related model instances
@@ -110,6 +114,10 @@ model Post {
   - `@DtoCastType(MyType, some-package)` will cast the field as `MyType` and add `import {MyType} from "some-package"`
   - `@DtoCastType(MyType, ../types, default)` will cast and add `import MyType from "../types"`
   - `@DtoCastType(MyTypeInterface, ../types, MyType)` will cast as `MyTypeInterface` and add `import {MyType as MyTypeInterface} from "../types"`
+- `@CustomValidator` - add custom validator, with an `import`. For example:
+  - `@CustomValidator(MyValidator)` will generate a `@MyValidator()` on the field.
+  - `@CustomValidator(MyValidator, ../package/name)` will generate a `@MyValidator()` on the field, and `import MyValidator from "../package/name"`.
+  - `@CustomValidator(MyValidator, 'param1', 2, ../package/name)` will generate a `@MyValidator('param1', 2)` on the field, and `import MyValidator from "../package/name"`.
 
 ### Schema Object annotations
 

@@ -13,6 +13,7 @@ import { generatePlainDto } from './generate-plain-dto';
 import { DTO_IGNORE_MODEL } from './annotations';
 import { isAnnotatedWith } from './field-classifiers';
 import { NamingStyle, Model, WriteableFileSpecs } from './types';
+import pluralize from 'pluralize-esm';
 
 interface RunParam {
   output: string;
@@ -60,6 +61,8 @@ export const run = ({
   };
 
   const transformFileNameCase = transformers[fileNamingStyle];
+  const transformFileNameCases = (str: string) =>
+    pluralize(transformFileNameCase(str));
 
   const templateHelpers = makeHelpers({
     transformFileNameCase,
@@ -80,8 +83,8 @@ export const run = ({
       output: {
         dto: outputToNestJsResourceStructure
           ? flatResourceStructure
-            ? path.join(output, transformFileNameCase(model.name))
-            : path.join(output, transformFileNameCase(model.name), 'dto')
+            ? path.join(output, transformFileNameCases(model.name))
+            : path.join(output, transformFileNameCases(model.name), 'dto')
           : output,
         entity: '',
       },
@@ -97,13 +100,13 @@ export const run = ({
       output: {
         dto: outputToNestJsResourceStructure
           ? flatResourceStructure
-            ? path.join(output, transformFileNameCase(model.name))
-            : path.join(output, transformFileNameCase(model.name), 'dto')
+            ? path.join(output, transformFileNameCases(model.name))
+            : path.join(output, transformFileNameCases(model.name), 'dto')
           : output,
         entity: outputToNestJsResourceStructure
           ? flatResourceStructure
-            ? path.join(output, transformFileNameCase(model.name))
-            : path.join(output, transformFileNameCase(model.name), 'entities')
+            ? path.join(output, transformFileNameCases(model.name))
+            : path.join(output, transformFileNameCases(model.name), 'entities')
           : output,
       },
     }));

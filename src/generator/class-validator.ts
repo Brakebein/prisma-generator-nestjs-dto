@@ -1,6 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
-import { IClassValidator, ParsedField } from './types';
-import { isRelation, isType } from './field-classifiers';
+import { IClassValidator, ParsedField, isApiResp } from './types';
+import { isAnnotatedWith, isRelation, isType } from './field-classifiers';
+import { CUSTOM_VALIDATOR } from './annotations';
 
 const validatorsWithoutParams = [
   'IsEmpty',
@@ -94,7 +95,7 @@ const validatorsWithParams = new Map<string, string>([
   ['Length', '0, 10'],
   ['MinLength', '0'],
   ['MaxLength', '10'],
-  ['Matches', "'', ''"],
+  ['Matches', ''],
   ['IsHash', "'md4'"],
   ['IsISSN', '{}'],
   ['IsInstance', "''"],
@@ -137,7 +138,11 @@ function extractValidator(
   field: DMMF.Field,
   prop: string,
 ): IClassValidator | null {
-  const regexp = new RegExp(`@${prop}(?:\\(([^)]*)\\))?\s*$`, 'm');
+  // nested parentheses
+  const regexp = new RegExp(
+    `@${prop}(?:\\(([^()]*|(?:[^()]*|\\((?:[^()]*|\\((?:[^()]*|\\((?:[^()]*|\\((?:[^()]*|\\((?:[^()]*|\\([^()]*\\))*\\))*\\))*\\))*\\))*\\))*)\\))?\s*$`,
+    'm',
+  );
   const matches = regexp.exec(field.documentation || '');
 
   if (matches) {
@@ -182,6 +187,19 @@ function optEach(validator: IClassValidator, isList: boolean): void {
 
     validator.value += ', { each: true }';
   }
+}
+
+function decorateCustomValidator(field: ParsedField): string {
+  const customValidator = isAnnotatedWith(field, CUSTOM_VALIDATOR, {
+    returnAnnotationParameters: true,
+  });
+  if (customValidator) {
+    const cvs = customValidator.split(',').map((s) => s.trim());
+    if (cvs.length) {
+      return `@${cvs[0]}(${cvs.slice(1, cvs.length - 1).join(', ')})\n`;
+    }
+  }
+  return '';
 }
 
 /**
@@ -245,14 +263,18 @@ export function parseClassValidators(
 /**
  * Compose `class-validator` decorators.
  */
-export function decorateClassValidators(field: ParsedField): string {
-  if (!field.classValidators?.length) return '';
+export function decorateClassValidators(
+  field: ParsedField,
+  dtoType: string,
+): string {
+  if (!field.classValidators?.length || isApiResp(field, dtoType)) return '';
 
   let output = '';
 
   field.classValidators.forEach((prop) => {
     output += `@${prop.name}(${prop.value ? prop.value : ''})\n`;
   });
+  output += decorateCustomValidator(field);
 
   return output;
 }

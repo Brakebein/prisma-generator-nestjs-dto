@@ -19,7 +19,7 @@ generator nestjsDto {
   dtoSuffix                       = "Dto"
   entityPrefix                    = ""
   entitySuffix                    = "Entity"
-  fileNamingStyle                 = "camel"
+  fileNamingStyle                 = "kebab"
   classValidation                 = "true"
   noDependencies                  = "false"
   outputType                      = "class"
@@ -33,19 +33,22 @@ model Product {
   /// @Contains('Product')
   /// @description Project's name
   /// @example My first product
+  /// @Matches(/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i)
   name            String      @db.VarChar(255)
   description     String      @db.VarChar(1024)
   /// @maxItems 5
   images          Json[]      @db.Json
   highlighted     Boolean     @default(false)
-  /// @DtoCreateOptional
   /// @description Number of reviews
   /// @minimum 9
   /// @example 12
-  reviewCount     Int         @default(0)
+  /// @DtoCreateApiResponse
+  /// @DtoPlainApiResponse
+  reviewCount     Boolean?         @default(false)
   type            ProductType
   /// @ArrayNotEmpty
   /// @MinLength(3)
+  /// @Matches(/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){1,14}$/i)
   tags            String[]
   /// @DtoCastType(MyType, my-package)
   attributes      Json?
@@ -55,12 +58,14 @@ model Product {
   otherAttributes Json
   /// @DtoCastType(OtherType, other-package, default)
   finalAttributes Json?
+  /// @DtoCreateApiResponse
   score           Float?
   lastOrder       DateTime?
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   note            String      @default("")
   /// @DtoRelationIncludeId
+  /// @CustomValidator(EntityIdExists, 'category', ../../infrastructures/validators/entity-exists.validator)
   categoryId      String      @db.Uuid
   companyId       String      @db.Uuid
 

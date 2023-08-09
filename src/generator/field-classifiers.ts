@@ -1,7 +1,7 @@
 import { DTO_READ_ONLY } from './annotations';
 import type { DMMF } from '@prisma/generator-helper';
 
-const ANNOTATION_PARAMS_REGEX = /(?:\(([@_A-Za-z0-9\-\/\.\\\, ]*)\))?/;
+const ANNOTATION_PARAMS_REGEX = /(?:\(([@_A-Za-z0-9\-\/\.\\\, ']*)\))?/;
 
 export function isAnnotatedWith(
   instance: Pick<DMMF.Field | DMMF.Model, 'documentation'>,

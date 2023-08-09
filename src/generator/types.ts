@@ -23,11 +23,21 @@ export interface ParsedField {
   hasDefaultValue?: boolean;
   default?: any;
   apiProperties?: IApiProperty[];
+  createApiResp?: boolean;
+  updateApiResp?: boolean;
+  plainApiResp?: boolean;
   classValidators?: IClassValidator[];
   relationName?: string;
   relationFromFields?: string[];
   relationToFields?: string[];
   pureType?: boolean;
+}
+export function isApiResp(field: ParsedField, dtoType?: string) {
+  if (dtoType) {
+    type ObjectKey = keyof typeof field;
+    const apiResp = (dtoType + 'ApiResp') as ObjectKey;
+    return field[apiResp];
+  }
 }
 
 export interface ExtraModel {

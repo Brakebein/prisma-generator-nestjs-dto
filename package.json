@@ -1,7 +1,7 @@
 {
-  "name": "@brakebein/prisma-generator-nestjs-dto",
+  "name": "@pond918/prisma-generator-nestjs-dto",
   "description": "Generates DTO and Entity classes from Prisma Schema for NestJS",
-  "version": "1.17.4",
+  "version": "1.17.511",
   "license": "Apache-2.0",
   "author": {
     "name": "Benjamin Kroeger",
@@ -41,7 +41,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Brakebein/prisma-generator-nestjs-dto"
+    "url": "https://github.com/pond918/prisma-generator-nestjs-dto"
   },
   "bin": {
     "prisma-generator-nestjs-dto": "dist/cli.js"
@@ -60,6 +60,7 @@
     "case": "^1.6.3",
     "chalk": "^4.1.2",
     "make-dir": "^3.1.0",
+    "pluralize-esm": "^9.0.5",
     "prettier": "^2.8.0",
     "slash": "^3.0.0",
     "tar": "^6.1.12",
