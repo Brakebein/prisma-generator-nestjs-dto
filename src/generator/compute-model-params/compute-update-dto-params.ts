@@ -1,5 +1,5 @@
-import slash from 'slash';
 import path from 'node:path';
+import slash from 'slash';
 import {
   DTO_API_HIDDEN,
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
@@ -10,6 +10,7 @@ import {
   DTO_TYPE_FULL_UPDATE,
   DTO_UPDATE_HIDDEN,
   DTO_UPDATE_OPTIONAL,
+  DTO_UPDATE_REQUIRED,
   DTO_UPDATE_VALIDATE_IF,
 } from '../annotations';
 import {
@@ -34,20 +35,20 @@ import {
 } from '../helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
-import type { TemplateHelpers } from '../template-helpers';
-import type {
-  Model,
-  UpdateDtoParams,
-  ImportStatementParams,
-  ParsedField,
-  IDecorators,
-  IClassValidator,
-} from '../types';
 import {
   makeImportsFromNestjsSwagger,
   parseApiProperty,
 } from '../api-decorator';
 import { parseClassValidators } from '../class-validator';
+import type { TemplateHelpers } from '../template-helpers';
+import type {
+  IClassValidator,
+  IDecorators,
+  ImportStatementParams,
+  Model,
+  ParsedField,
+  UpdateDtoParams,
+} from '../types';
 
 interface ComputeUpdateDtoParamsParam {
   model: Model;
@@ -129,6 +130,10 @@ export const computeUpdateDtoParams = ({
       if (isId(field)) return result;
       if (isUpdatedAt(field)) return result;
       if (isRequiredWithDefaultValue(field)) return result;
+    }
+
+    if (isAnnotatedWith(field, DTO_UPDATE_REQUIRED)) {
+      overrides.isRequired = true;
     }
 
     if (isType(field)) {

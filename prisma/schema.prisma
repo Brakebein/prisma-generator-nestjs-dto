@@ -33,6 +33,7 @@ model Product {
   /// @Contains('Product')
   /// @description Project's name
   /// @example My first product
+  /// @DtoUpdateRequired
   name            String        @db.VarChar(255)
   description     String        @db.VarChar(1024)
   /// @maxItems 5

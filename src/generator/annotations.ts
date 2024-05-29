@@ -7,6 +7,7 @@ export const DTO_CONNECT_HIDDEN = /@DtoConnectHidden/;
 export const DTO_API_HIDDEN = /@DtoApiHidden/;
 export const DTO_CREATE_OPTIONAL = /@DtoCreateOptional/;
 export const DTO_UPDATE_OPTIONAL = /@DtoUpdateOptional/;
+export const DTO_UPDATE_REQUIRED = /@DtoUpdateRequired/;
 export const DTO_RELATION_REQUIRED = /@DtoRelationRequired/;
 export const DTO_RELATION_INCLUDE_ID = /@DtoRelationIncludeId/;
 export const DTO_RELATION_CAN_CREATE_ON_CREATE =
