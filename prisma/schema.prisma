@@ -25,6 +25,7 @@ generator nestjsDto {
   outputType                      = "class"
   definiteAssignmentAssertion     = "true"
   prettier                        = "true"
+  outputApiPropertyType           = "true"
 }
 
 model Product {

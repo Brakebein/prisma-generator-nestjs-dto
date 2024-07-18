@@ -103,6 +103,7 @@ interface MakeHelpersParam {
   definiteAssignmentAssertion: boolean;
   requiredResponseApiProperty: boolean;
   prismaClientImportPath: string;
+  outputApiPropertyType: boolean;
 }
 export const makeHelpers = ({
   connectDtoPrefix,
@@ -119,6 +120,7 @@ export const makeHelpers = ({
   definiteAssignmentAssertion,
   requiredResponseApiProperty,
   prismaClientImportPath,
+  outputApiPropertyType,
 }: MakeHelpersParam) => {
   const className = (name: string, prefix = '', suffix = '') =>
     `${prefix}${transformClassNameCase(name)}${suffix}`;
@@ -263,6 +265,7 @@ export const makeHelpers = ({
       definiteAssignmentAssertion,
       requiredResponseApiProperty,
       prismaClientImportPath,
+      outputApiPropertyType,
     },
     apiExtraModels,
     entityName,

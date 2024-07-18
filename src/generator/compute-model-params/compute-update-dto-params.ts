@@ -206,6 +206,10 @@ export const computeUpdateDtoParams = ({
       if (isAnnotatedWith(field, DTO_API_HIDDEN)) {
         decorators.apiHideProperty = true;
       } else {
+        // If outputApiPropertyType is false, make sure to set includeType false, otherwise use negated overrides.type
+        const includeType = templateHelpers.config.outputApiPropertyType
+          ? !overrides.type
+          : false;
         decorators.apiProperties = parseApiProperty(
           {
             ...field,
@@ -213,10 +217,10 @@ export const computeUpdateDtoParams = ({
             isNullable: !field.isRequired,
           },
           {
-            type: !overrides.type,
+            type: includeType,
           },
         );
-        if (overrides.type)
+        if (overrides.type && templateHelpers.config.outputApiPropertyType)
           decorators.apiProperties.push({
             name: 'type',
             value: overrides.type,

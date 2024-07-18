@@ -110,7 +110,10 @@ export const computePlainDtoParams = ({
               : false,
             isNullable: !field.isRequired,
           },
-          { default: false },
+          {
+            default: false,
+            type: templateHelpers.config.outputApiPropertyType,
+          },
         );
         const typeProperty = decorators.apiProperties.find(
           (p) => p.name === 'type',

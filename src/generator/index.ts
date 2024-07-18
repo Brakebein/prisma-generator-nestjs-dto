@@ -33,6 +33,7 @@ interface RunParam {
   definiteAssignmentAssertion: boolean;
   requiredResponseApiProperty: boolean;
   prismaClientImportPath: string;
+  outputApiPropertyType: boolean;
 }
 
 export const run = ({
@@ -51,6 +52,7 @@ export const run = ({
     definiteAssignmentAssertion,
     requiredResponseApiProperty,
     prismaClientImportPath,
+    outputApiPropertyType,
     ...preAndSuffixes
   } = options;
 
@@ -72,6 +74,7 @@ export const run = ({
     definiteAssignmentAssertion,
     prismaClientImportPath,
     requiredResponseApiProperty,
+    outputApiPropertyType,
     ...preAndSuffixes,
   });
   const allModels = dmmf.datamodel.models;

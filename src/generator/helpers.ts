@@ -551,7 +551,15 @@ export const generateUniqueInput = ({
     }
 
     if (!t.config.noDependencies) {
-      decorators.apiProperties = parseApiProperty({ ...field, ...overrides });
+      decorators.apiProperties = parseApiProperty(
+        {
+          ...field,
+          ...overrides,
+        },
+        {
+          type: t.config.outputApiPropertyType,
+        },
+      );
       const typeProperty = decorators.apiProperties.find(
         (p) => p.name === 'type',
       );
