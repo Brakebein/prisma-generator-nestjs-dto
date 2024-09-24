@@ -51,6 +51,7 @@ const validatorsWithoutParams = [
   'IsMagnetURI',
   'IsFirebasePushId',
   'IsMilitaryTime',
+  'IsTimeZone',
   'IsMimeType',
   'IsSemVer',
   'IsISRC',
