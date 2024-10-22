@@ -13,7 +13,7 @@ const validatorsWithoutParams = [
   'IsBooleanString',
   'IsDateString',
   'IsAlpha',
-  'IsAlphaNumeric',
+  'IsAlphanumeric',
   'IsAscii',
   'IsBase32',
   'IsBase58',
