@@ -129,8 +129,10 @@ export const generate = async (options: WritableDeep<GeneratorOptions>) => {
     (config) => config.name === 'client',
   );
   const prismaClientOutputPath = prismaClientGenerator?.output?.value;
-  let prismaClientImportPath = '@prisma/client';
+  let prismaClientImportPath =
+    options.generator.config.prismaClientImportPath || '@prisma/client';
   if (
+    !options.generator.config.prismaClientImportPath &&
     prismaClientOutputPath &&
     !prismaClientOutputPath.endsWith(
       ['node_modules', '@prisma', 'client'].join(path.sep),
@@ -187,7 +189,7 @@ export const generate = async (options: WritableDeep<GeneratorOptions>) => {
     noDependencies,
     definiteAssignmentAssertion,
     requiredResponseApiProperty,
-    prismaClientImportPath,
+    prismaClientImportPath: prismaClientImportPath as string,
     outputApiPropertyType,
     generateFileTypes: generateFileTypes as string,
     wrapRelationsAsType,
