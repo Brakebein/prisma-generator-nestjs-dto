@@ -131,7 +131,10 @@ export const computeUpdateDtoParams = ({
     // fields annotated with @DtoReadOnly are filtered out before this
     // so this safely allows to mark fields that are required in Prisma Schema
     // as **not** required in UpdateDTO
-    const isDtoOptional = isAnnotatedWith(field, DTO_UPDATE_OPTIONAL);
+    const isDtoOptional = isAnnotatedWithOneOf(field, [
+      DTO_UPDATE_OPTIONAL,
+      DTO_UPDATE_REQUIRED,
+    ]);
     const doFullUpdate = isAnnotatedWith(field, DTO_TYPE_FULL_UPDATE);
 
     if (!isDtoOptional) {

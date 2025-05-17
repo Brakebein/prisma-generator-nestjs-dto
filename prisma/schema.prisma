@@ -92,13 +92,13 @@ model Product {
   price Decimal
 
   /// @DtoEntityHidden
-  /// @DtoCreateOptional
+  /// @DtoCreateRequired
   /// @DtoUpdateOptional
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   /// @DtoEntityHidden
   /// @DtoCreateOptional
-  /// @DtoUpdateOptional
+  /// @DtoUpdateRequired
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   bikeId String?

@@ -136,7 +136,10 @@ export const computeCreateDtoParams = ({
     // fields annotated with @DtoReadOnly are filtered out before this
     // so this safely allows to mark fields that are required in Prisma Schema
     // as **not** required in CreateDTO
-    const isDtoOptional = isAnnotatedWith(field, DTO_CREATE_OPTIONAL);
+    const isDtoOptional = isAnnotatedWithOneOf(field, [
+      DTO_CREATE_OPTIONAL,
+      DTO_CREATE_REQUIRED,
+    ]);
 
     if (!isDtoOptional) {
       if (isIdWithDefaultValue(field)) return result;
