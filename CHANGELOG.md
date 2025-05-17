@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.28.0] - 2025-05-17
+
+### Added
+
+- add `prismaClientImportPath` as possibility to override the import path of Prisma client [#73][i73]
+
+### Changed
+
+- `@DtoCreateRequired` and `@DtoUpdateRequired` also unhides field that would otherwise be omitted (e.g. `@id`, `@updatedAt`), similar to `@DtoCreateOptional`, etc. [#72][i72]
+
 ## [1.27.0] - 2025-03-27
 
 - upgrade to Prisma@6
@@ -436,3 +446,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [i68]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/68
 [i69]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/69
 [i71]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/71
+[i72]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/72
+[i73]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/73
