@@ -12,6 +12,7 @@ export interface ParsedField {
   kind: DMMF.FieldKind | 'relation-input';
   name: string;
   type: string;
+  modelName?: string;
   documentation?: string;
   isRequired: boolean;
   isList: boolean;

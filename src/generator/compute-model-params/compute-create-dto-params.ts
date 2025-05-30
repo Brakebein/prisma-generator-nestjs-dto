@@ -271,7 +271,14 @@ export const computeCreateDtoParams = ({
       }
     }
 
-    return [...result, mapDMMFToParsedField(field, overrides, decorators)];
+    return [
+      ...result,
+      mapDMMFToParsedField(
+        field,
+        { ...overrides, modelName: model.name },
+        decorators,
+      ),
+    ];
   }, [] as ParsedField[]);
 
   const importPrismaClient = makeImportsFromPrismaClient(

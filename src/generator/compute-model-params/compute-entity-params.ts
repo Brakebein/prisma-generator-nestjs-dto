@@ -141,7 +141,8 @@ export const computeEntityParams = ({
         imports.push({
           destruct: [
             importName,
-            ...(templateHelpers.config.wrapRelationsAsType
+            ...(templateHelpers.config.wrapRelationsAsType &&
+            field.type !== model.name
               ? [`type ${importName} as ${importName}AsType`]
               : []),
           ],
@@ -216,7 +217,14 @@ export const computeEntityParams = ({
       }
     }
 
-    return [...result, mapDMMFToParsedField(field, overrides, decorators)];
+    return [
+      ...result,
+      mapDMMFToParsedField(
+        field,
+        { ...overrides, modelName: model.name },
+        decorators,
+      ),
+    ];
   }, [] as ParsedField[]);
 
   const importPrismaClient = makeImportsFromPrismaClient(

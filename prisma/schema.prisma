@@ -27,7 +27,7 @@ generator nestjsDto {
   definiteAssignmentAssertion     = "true"
   prettier                        = "true"
   outputApiPropertyType           = "true"
-  wrapRelationsAsType             = "false"
+  wrapRelationsAsType             = "true"
 }
 
 model Product {
@@ -118,6 +118,10 @@ model Category {
   /// @DtoOverrideType(ProductFoo2, ./product.foo2)
   /// @DtoOverrideApiPropertyType(ProductFoo3, ./product.foo3)
   product   Product[]
+
+  parentCategoryId String?
+  parentCategory   Category?  @relation(name: "ParentCategory", fields: [parentCategoryId], references: [id])
+  childCategories  Category[] @relation("ParentCategory")
 }
 
 model Company {
