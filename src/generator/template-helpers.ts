@@ -214,7 +214,10 @@ export const makeHelpers = ({
           : (field.relationName
               ? entityName(field.type)
               : dtoName(field.type, doFullUpdate ? 'create' : dtoType)) +
-            when(wrapRelationsAsType, 'AsType'))
+            when(
+              wrapRelationsAsType && field.type !== field.modelName,
+              'AsType',
+            ))
     }${when(field.isList, '[]')}`;
   };
 
