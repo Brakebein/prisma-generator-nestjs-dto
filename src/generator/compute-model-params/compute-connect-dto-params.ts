@@ -172,7 +172,11 @@ export const computeConnectDtoParams = ({
       }
     }
 
-    return mapDMMFToParsedField(field, overrides, decorators);
+    return mapDMMFToParsedField(
+      field,
+      { ...overrides, modelName: model.name },
+      decorators,
+    );
   });
 
   const importPrismaClient = makeImportsFromPrismaClient(
