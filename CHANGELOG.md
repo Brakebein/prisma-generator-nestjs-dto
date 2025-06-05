@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.28.1] - 2025-06-05
+
+### Fixed
+
+- fix correct reference to self in case of self relation with wrapRelationsAsType [#75][pr75]
+- fix type in RelationInputDto for field with `@DtoOverrideType` annotation and `wrapRelationsAsType = "true"`
+
 ## [1.28.0] - 2025-05-17
 
 ### Added
@@ -448,3 +455,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [i71]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/71
 [i72]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/72
 [i73]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/73
+[pr75]: https://github.com/Brakebein/prisma-generator-nestjs-dto/pull/75
