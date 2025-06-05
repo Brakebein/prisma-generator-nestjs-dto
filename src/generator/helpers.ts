@@ -621,6 +621,7 @@ export const generateRelationInput = ({
         isId: field.isId,
         isUnique: field.isUnique,
         isReadOnly: field.isReadOnly,
+        documentation: field.documentation,
       })),
       'plain',
       true,
