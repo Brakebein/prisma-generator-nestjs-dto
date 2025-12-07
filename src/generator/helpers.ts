@@ -9,6 +9,9 @@ import {
 import { scalarToTS } from './template-helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
+import { CUSTOM_VALIDATOR, DTO_CAST_TYPE } from './annotations';
+import { parseApiProperty } from './api-decorator';
+import { parseClassValidators } from './class-validator';
 import type { TemplateHelpers } from './template-helpers';
 import type {
   IApiProperty,
@@ -17,9 +20,6 @@ import type {
   Model,
   ParsedField,
 } from './types';
-import { parseApiProperty } from './api-decorator';
-import { parseClassValidators } from './class-validator';
-import { DTO_CAST_TYPE, CUSTOM_VALIDATOR } from './annotations';
 
 export const uniq = <T = any>(input: T[]): T[] => Array.from(new Set(input));
 export const concatIntoArray = <T = any>(source: T[], target: T[]) =>
@@ -95,7 +95,7 @@ export const makeImportsFromPrismaClient = (
       return ret;
     }
 
-    const [importAs, importFrom, importWas] = castType
+    let [importAs, importFrom, importWas] = castType
       .split(',')
       .map((s) => s.trim());
 
@@ -105,6 +105,9 @@ export const makeImportsFromPrismaClient = (
       );
     }
 
+    // generic types
+    importAs.includes('<') && (importAs = importAs.split('<')[0]);
+    importWas?.includes('<') && (importWas = importWas.split('<')[0]);
     if (!importWas || importWas === importAs) {
       ret.push({
         from: importFrom,
@@ -242,6 +245,7 @@ interface GenerateRelationInputParam {
     | TemplateHelpers['updateDtoName'];
   canCreateAnnotation: RegExp;
   canConnectAnnotation: RegExp;
+  canUpdateAnnotation: RegExp;
 }
 export const generateRelationInput = ({
   field,
@@ -251,6 +255,7 @@ export const generateRelationInput = ({
   preAndSuffixClassName,
   canCreateAnnotation,
   canConnectAnnotation,
+  canUpdateAnnotation,
 }: GenerateRelationInputParam) => {
   const relationInputClassProps: Array<
     Pick<ParsedField, 'name' | 'type' | 'apiProperties' | 'classValidators'>
@@ -263,7 +268,8 @@ export const generateRelationInput = ({
 
   const createRelation = isAnnotatedWith(field, canCreateAnnotation);
   const connectRelation = isAnnotatedWith(field, canConnectAnnotation);
-  const isRequired = !(createRelation && connectRelation);
+  const updateRelation = isAnnotatedWith(field, canUpdateAnnotation);
+  const isRequired = !(createRelation && connectRelation && updateRelation);
 
   if (createRelation) {
     const preAndPostfixedName = t.createDtoName(field.type);
@@ -367,6 +373,83 @@ export const generateRelationInput = ({
     relationInputClassProps.push({
       name: 'connect',
       type: preAndPostfixedName,
+      apiProperties: decorators.apiProperties,
+      classValidators: decorators.classValidators,
+    });
+  }
+
+  if (updateRelation) {
+    const updateDtoName = t.updateDtoName(field.type);
+    apiExtraModels.push(updateDtoName);
+    const createDtoName = t.createDtoName(field.type);
+    apiExtraModels.push(createDtoName);
+
+    const modelToImportFrom = allModels.find(({ name }) => name === field.type);
+
+    if (!modelToImportFrom)
+      throw new Error(
+        `related model '${field.type}' for '${model.name}.${field.name}' not found`,
+      );
+
+    imports.push({
+      from: slash(
+        `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+          path.sep
+        }${t.updateDtoFilename(field.type)}`,
+      ),
+      destruct: [updateDtoName],
+    });
+    imports.push({
+      from: slash(
+        `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+          path.sep
+        }${t.createDtoFilename(field.type)}`,
+      ),
+      destruct: [createDtoName],
+    });
+
+    const decorators: {
+      apiProperties?: IApiProperty[];
+      classValidators?: IClassValidator[];
+    } = {};
+
+    if (t.config.classValidation) {
+      decorators.classValidators = parseClassValidators(
+        { ...field, isRequired },
+        'Object',
+      );
+      decorators.classValidators.push({
+        name: 'Transform',
+        value: `({ value, obj }) => {
+					return plainToInstance(
+						obj.id === undefined ? ${createDtoName} : ${updateDtoName},
+						value,
+					);
+				},
+				{
+					toClassOnly: true,
+				}`,
+      });
+
+      concatUniqueIntoArray(
+        decorators.classValidators,
+        classValidators,
+        'name',
+      );
+    }
+
+    if (!t.config.noDependencies) {
+      decorators.apiProperties = parseApiProperty({ ...field, isRequired });
+      decorators.apiProperties.push({
+        name: 'type',
+        value: 'Object',
+        noEncapsulation: true,
+      });
+    }
+
+    relationInputClassProps.push({
+      name: 'update',
+      type: `(${updateDtoName} | ${createDtoName})`,
       apiProperties: decorators.apiProperties,
       classValidators: decorators.classValidators,
     });

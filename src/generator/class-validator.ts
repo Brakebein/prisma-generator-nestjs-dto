@@ -57,6 +57,7 @@ const validatorsWithoutParams = [
   'IsISRC',
   'IsRFC3339',
   'Allow',
+  'ValidateNested',
 ];
 
 const validatorsWithParams = new Map<string, string>([

@@ -1,19 +1,19 @@
-import path from 'node:path';
-import { camel, pascal, kebab, snake } from 'case';
 import { DMMF } from '@prisma/generator-helper';
+import { camel, kebab, pascal, snake } from 'case';
+import path from 'node:path';
+import pluralize from 'pluralize-esm';
 import { logger } from '../utils';
-import { makeHelpers } from './template-helpers';
+import { DTO_IGNORE_MODEL, DTO_SINGULAR_MODEL } from './annotations';
 import { computeModelParams } from './compute-model-params';
 import { computeTypeParams } from './compute-type-params';
+import { isAnnotatedWith } from './field-classifiers';
 import { generateConnectDto } from './generate-connect-dto';
 import { generateCreateDto } from './generate-create-dto';
-import { generateUpdateDto } from './generate-update-dto';
 import { generateEntity } from './generate-entity';
 import { generatePlainDto } from './generate-plain-dto';
-import { DTO_IGNORE_MODEL } from './annotations';
-import { isAnnotatedWith } from './field-classifiers';
-import { NamingStyle, Model, WriteableFileSpecs } from './types';
-import pluralize from 'pluralize-esm';
+import { generateUpdateDto } from './generate-update-dto';
+import { makeHelpers } from './template-helpers';
+import { Model, NamingStyle, WriteableFileSpecs } from './types';
 
 interface RunParam {
   output: string;
@@ -33,6 +33,7 @@ interface RunParam {
   noDependencies: boolean;
   definiteAssignmentAssertion: boolean;
   prismaClientImportPath: string;
+  forceIdOnConnect: boolean;
 }
 
 export const run = ({
@@ -50,6 +51,7 @@ export const run = ({
     noDependencies,
     definiteAssignmentAssertion,
     prismaClientImportPath,
+    forceIdOnConnect,
     ...preAndSuffixes
   } = options;
 
@@ -61,8 +63,10 @@ export const run = ({
   };
 
   const transformFileNameCase = transformers[fileNamingStyle];
-  const transformFileNameCases = (str: string) =>
-    pluralize(transformFileNameCase(str));
+  const transformFileNameCases = (model: DMMF.Model) => {
+    const singular = isAnnotatedWith(model, DTO_SINGULAR_MODEL);
+    return pluralize(transformFileNameCase(model.name), singular ? 1 : 2);
+  };
 
   const templateHelpers = makeHelpers({
     transformFileNameCase,
@@ -83,8 +87,8 @@ export const run = ({
       output: {
         dto: outputToNestJsResourceStructure
           ? flatResourceStructure
-            ? path.join(output, transformFileNameCases(model.name))
-            : path.join(output, transformFileNameCases(model.name), 'dto')
+            ? path.join(output, transformFileNameCases(model))
+            : path.join(output, transformFileNameCases(model), 'dto')
           : output,
         entity: '',
       },
@@ -100,13 +104,13 @@ export const run = ({
       output: {
         dto: outputToNestJsResourceStructure
           ? flatResourceStructure
-            ? path.join(output, transformFileNameCases(model.name))
-            : path.join(output, transformFileNameCases(model.name), 'dto')
+            ? path.join(output, transformFileNameCases(model))
+            : path.join(output, transformFileNameCases(model), 'dto')
           : output,
         entity: outputToNestJsResourceStructure
           ? flatResourceStructure
-            ? path.join(output, transformFileNameCases(model.name))
-            : path.join(output, transformFileNameCases(model.name), 'entities')
+            ? path.join(output, transformFileNameCases(model))
+            : path.join(output, transformFileNameCases(model), 'entities')
           : output,
       },
     }));
@@ -168,6 +172,7 @@ export const run = ({
       model,
       allModels: [...filteredTypes, ...filteredModels],
       templateHelpers,
+      forceIdOnConnect,
     });
 
     // generate connect-model.dto.ts

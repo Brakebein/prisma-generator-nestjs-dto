@@ -1,4 +1,6 @@
 import type { DMMF } from '@prisma/generator-helper';
+import { parseApiProperty } from '../api-decorator';
+import { parseClassValidators } from '../class-validator';
 import { isId, isUnique } from '../field-classifiers';
 import {
   concatIntoArray,
@@ -9,19 +11,19 @@ import {
   uniq,
   zipImportStatementParams,
 } from '../helpers';
+import { TemplateHelpers } from '../template-helpers';
 import type { ConnectDtoParams, Model } from '../types';
 import { IApiProperty, IClassValidator, ImportStatementParams } from '../types';
-import { parseClassValidators } from '../class-validator';
-import { TemplateHelpers } from '../template-helpers';
-import { parseApiProperty } from '../api-decorator';
 
 interface ComputeConnectDtoParamsParam {
   model: Model;
   templateHelpers: TemplateHelpers;
+  forceIdOnConnect?: boolean;
 }
 export const computeConnectDtoParams = ({
   model,
   templateHelpers,
+  forceIdOnConnect = false,
 }: ComputeConnectDtoParamsParam): ConnectDtoParams => {
   let hasApiProperty = false;
   const imports: ImportStatementParams[] = [];
@@ -63,7 +65,7 @@ export const computeConnectDtoParams = ({
   // TODO consider adding documentation block to model that one of the properties must be provided
   const uniqueFields = uniq([...idFields, ...isUniqueFields]);
   const overrides =
-    uniqueFields.length + uniqueCompounds.length > 1
+    uniqueFields.length + uniqueCompounds.length > 1 && !forceIdOnConnect
       ? { isRequired: false }
       : {};
 
@@ -130,6 +132,12 @@ export const computeConnectDtoParams = ({
     if (templateHelpers.config.noDependencies) {
       if (field.type === 'Json') field.type = 'Object';
       else if (field.type === 'Decimal') field.type = 'Float';
+    }
+
+    if (forceIdOnConnect && field.name === 'id') {
+      field.isRequired = true;
+    } else {
+      field.isRequired = false;
     }
 
     return mapDMMFToParsedField(field, overrides, decorators);

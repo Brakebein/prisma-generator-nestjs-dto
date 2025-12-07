@@ -14,7 +14,10 @@ const ApiProps = [
   'example',
 ];
 
-const PrismaScalarToFormat: Record<string, { type: string; format: string }> = {
+export const PrismaScalarToFormat: Record<
+  string,
+  { type: string; format: string }
+> = {
   Int: { type: 'integer', format: 'int32' },
   BigInt: { type: 'integer', format: 'int64' },
   Float: { type: 'number', format: 'float' },
@@ -151,7 +154,8 @@ export function decorateApiProperty(
   castType: string | undefined,
   dtoType: 'create' | 'update' | 'plain' | undefined = undefined,
 ): string {
-  castType = castType ? (castType = `type: ${castType},\n`) : '';
+  const castType0 = castType;
+  castType = castType ? `type: ${castType},\n` : '';
 
   if (isApiResp(field, dtoType)) {
     let decorator = '';
@@ -182,9 +186,14 @@ export function decorateApiProperty(
 
   let decorator = '';
   if (field.apiProperties?.length) {
+    if (castType) {
+      field.apiProperties = field.apiProperties.filter((p) => p.name != 'type');
+      const td = field.apiProperties.find((p) => p.name === 'type_decorator');
+      castType0 && td && (td.value = castType0);
+    }
     decorator += '@ApiProperty({\n';
     field.apiProperties.forEach((prop) => {
-      if (prop.name === 'dummy') return;
+      if (prop.name === 'dummy' || prop.name === 'type_decorator') return;
       if (prop.name === 'required') required = '';
       decorator += `  ${prop.name}: ${
         prop.name === 'enum' || prop.noEncapsulation
@@ -193,6 +202,13 @@ export function decorateApiProperty(
       },\n`;
     });
     decorator += `${castType}${required}})\n`;
+  }
+
+  const typeDecorator = field.apiProperties?.find(
+    (prop) => prop.name === 'type_decorator',
+  );
+  if (typeDecorator) {
+    decorator += `@Type(() => ${typeDecorator.value})\n`;
   }
 
   return decorator;

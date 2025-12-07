@@ -57,5 +57,15 @@ describe('field-classifiers', () => {
         ),
       ).toStrictEqual('');
     });
+
+    it('returns params with generic type', () => {
+      expect(
+        isAnnotatedWith(
+          mockDmmfAnnotation('@DtoCastType(MyType<any>, ../types, default)'),
+          DTO_CAST_TYPE,
+          { returnAnnotationParameters: true },
+        ),
+      ).toStrictEqual('MyType<any>, ../types, default');
+    });
   });
 });

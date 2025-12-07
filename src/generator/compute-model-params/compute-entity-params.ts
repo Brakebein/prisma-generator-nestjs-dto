@@ -16,14 +16,14 @@ import {
 } from '../helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
+import { PrismaScalarToFormat, parseApiProperty } from '../api-decorator';
+import type { TemplateHelpers } from '../template-helpers';
 import type {
-  Model,
   EntityParams,
   ImportStatementParams,
+  Model,
   ParsedField,
 } from '../types';
-import type { TemplateHelpers } from '../template-helpers';
-import { parseApiProperty } from '../api-decorator';
 import { IApiProperty } from '../types';
 
 interface ComputeEntityParamsParam {
@@ -95,7 +95,7 @@ export const computeEntityParams = ({
     // they can however be `selected` and thus might optionally be present in the
     // response from PrismaClient
     if (isRelation(field)) {
-      overrides.isRequired = false;
+      overrides.isRequired = isAnnotatedWith(field, DTO_RELATION_REQUIRED);
       overrides.isNullable = field.isList
         ? false
         : field.isRequired
@@ -159,9 +159,36 @@ export const computeEntityParams = ({
 
     if (!templateHelpers.config.noDependencies) {
       decorators.apiProperties = parseApiProperty(
-        { ...field, isRequired: false, isNullable: !field.isRequired },
+        {
+          ...field,
+          isRequired: field.isRequired,
+          isNullable: !field.isRequired,
+        },
         { default: false },
       );
+
+      const scalarFormat = PrismaScalarToFormat[field.type];
+      if (!scalarFormat && field.type != 'Json') {
+        decorators.apiProperties.push({
+          name: 'type',
+          value: ['String', 'Boolean'].includes(field.type)
+            ? field.type
+            : `() => ${field.type}`,
+          noEncapsulation: true,
+        });
+
+        if (
+          !['String', 'Json', 'Boolean'].includes(field.type) &&
+          field.kind !== 'enum'
+        ) {
+          decorators.apiProperties.push({
+            name: 'type_decorator',
+            value: field.type,
+            noEncapsulation: true,
+          });
+          imports.unshift({ from: 'class-transformer', destruct: ['Type'] });
+        }
+      }
       if (decorators.apiProperties.length) hasApiProperty = true;
     }
 
@@ -184,6 +211,11 @@ export const computeEntityParams = ({
     fields,
     templateHelpers.config.prismaClientImportPath,
   );
+
+  imports.unshift({
+    from: 'class-transformer',
+    destruct: ['Expose'],
+  });
 
   return {
     model,

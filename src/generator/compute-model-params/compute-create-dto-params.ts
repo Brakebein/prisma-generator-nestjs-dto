@@ -1,11 +1,12 @@
-import slash from 'slash';
 import path from 'node:path';
+import slash from 'slash';
 import {
-  DTO_CREATE_OPTIONAL,
-  DTO_CREATE_HIDDEN,
   DTO_CREATE_API_RESP,
+  DTO_CREATE_HIDDEN,
+  DTO_CREATE_OPTIONAL,
   DTO_RELATION_CAN_CONNECT_ON_CREATE,
   DTO_RELATION_CAN_CREATE_ON_CREATE,
+  DTO_RELATION_CAN_UPDATE_ON_UPDATE,
   DTO_RELATION_INCLUDE_ID,
   DTO_RELATION_MODIFIERS_ON_CREATE,
   DTO_RELATION_REQUIRED,
@@ -32,17 +33,17 @@ import {
 } from '../helpers';
 
 import type { DMMF } from '@prisma/generator-helper';
-import type { TemplateHelpers } from '../template-helpers';
-import {
-  Model,
-  CreateDtoParams,
-  ImportStatementParams,
-  ParsedField,
-  IClassValidator,
-} from '../types';
 import { parseApiProperty } from '../api-decorator';
 import { parseClassValidators } from '../class-validator';
-import { IApiProperty } from '../types';
+import type { TemplateHelpers } from '../template-helpers';
+import {
+  CreateDtoParams,
+  IApiProperty,
+  IClassValidator,
+  ImportStatementParams,
+  Model,
+  ParsedField,
+} from '../types';
 
 interface ComputeCreateDtoParamsParam {
   model: Model;
@@ -94,32 +95,46 @@ export const computeCreateDtoParams = ({
         preAndSuffixClassName: templateHelpers.createDtoName,
         canCreateAnnotation: DTO_RELATION_CAN_CREATE_ON_CREATE,
         canConnectAnnotation: DTO_RELATION_CAN_CONNECT_ON_CREATE,
+        canUpdateAnnotation: DTO_RELATION_CAN_UPDATE_ON_UPDATE,
       });
 
-      const isDtoRelationRequired = isAnnotatedWith(
-        field,
-        DTO_RELATION_REQUIRED,
-      );
-      if (isDtoRelationRequired) overrides.isRequired = true;
+      if (relationInputType.imports.length > 1) {
+        // Create and Connect
+        const isDtoRelationRequired = isAnnotatedWith(
+          field,
+          DTO_RELATION_REQUIRED,
+        );
+        if (isDtoRelationRequired) overrides.isRequired = true;
 
-      // list fields can not be required
-      // TODO maybe throw an error if `isDtoRelationRequired` and `isList`
-      if (field.isList) overrides.isRequired = false;
+        // list fields can not be required
+        // TODO maybe throw an error if `isDtoRelationRequired` and `isList`
+        if (field.isList) overrides.isRequired = false;
 
-      overrides.type = relationInputType.type;
-      // since relation input field types are translated to something like { connect: Foo[] }, the field type itself is not a list anymore.
-      // You provide list input in the nested `connect` or `create` properties.
-      overrides.isList = false;
+        overrides.type = relationInputType.type;
+        // since relation input field types are translated to something like { connect: Foo[] }, the field type itself is not a list anymore.
+        // You provide list input in the nested `connect` or `create` properties.
 
-      concatIntoArray(relationInputType.imports, imports);
-      concatIntoArray(relationInputType.generatedClasses, extraClasses);
-      if (!templateHelpers.config.noDependencies)
-        concatIntoArray(relationInputType.apiExtraModels, apiExtraModels);
-      concatUniqueIntoArray(
-        relationInputType.classValidators,
-        classValidators,
-        'name',
-      );
+        concatIntoArray(relationInputType.imports, imports);
+        concatIntoArray(relationInputType.generatedClasses, extraClasses);
+        if (!templateHelpers.config.noDependencies)
+          concatIntoArray(relationInputType.apiExtraModels, apiExtraModels);
+        concatUniqueIntoArray(
+          relationInputType.classValidators,
+          classValidators,
+          'name',
+        );
+      } else {
+        const type = relationInputType.classValidators.find(
+          (cv) => cv.name === 'Type',
+        );
+        if (type && type.value) {
+          overrides.type = type.value;
+
+          field.documentation += `\n%${type.value.replace('() => ', '')}%`;
+        }
+
+        concatIntoArray(relationInputType.imports, imports);
+      }
     }
 
     if (
@@ -185,7 +200,7 @@ export const computeCreateDtoParams = ({
           ...field,
           ...overrides,
         },
-        overrides.type || templateHelpers.createDtoName,
+        overrides.type?.replace('() =>', '') || templateHelpers.createDtoName,
       );
       concatUniqueIntoArray(
         decorators.classValidators,
@@ -200,6 +215,15 @@ export const computeCreateDtoParams = ({
       decorators.apiProperties = parseApiProperty(field, {
         type: !overrides.type,
       });
+      if (
+        field.isList &&
+        !decorators.apiProperties.find((p) => p.name === 'isArray')
+      ) {
+        decorators.apiProperties.push({
+          name: 'isArray',
+          value: 'true',
+        });
+      }
       if (overrides.type)
         decorators.apiProperties.push({
           name: 'type',

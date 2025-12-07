@@ -1,14 +1,14 @@
+import { generatorHandler } from '@prisma/generator-helper';
+import makeDir from 'make-dir';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import makeDir from 'make-dir';
-import slash from 'slash';
-import { generatorHandler } from '@prisma/generator-helper';
 import prettier from 'prettier';
-import { logger, parseEnvValue } from './utils';
+import slash from 'slash';
 import { run } from './generator';
+import { logger, parseEnvValue } from './utils';
 
 import type { GeneratorOptions } from '@prisma/generator-helper';
-import type { WriteableFileSpecs, NamingStyle } from './generator/types';
+import type { NamingStyle, WriteableFileSpecs } from './generator/types';
 
 const stringToBoolean = (input: string, defaultValue = false) => {
   if (input === 'true') {
@@ -139,6 +139,11 @@ export const generate = async (options: GeneratorOptions) => {
     }
   }
 
+  const forceIdOnConnect = stringToBoolean(
+    options.generator.config.forceIdOnConnect,
+    false,
+  );
+
   const results = run({
     output,
     dmmf: options.dmmf,
@@ -157,6 +162,7 @@ export const generate = async (options: GeneratorOptions) => {
     noDependencies,
     definiteAssignmentAssertion,
     prismaClientImportPath,
+    forceIdOnConnect,
   });
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};

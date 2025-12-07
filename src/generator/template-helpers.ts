@@ -1,9 +1,9 @@
 import { DMMF } from '@prisma/generator-helper';
-import { ImportStatementParams, ParsedField, isApiResp } from './types';
+import { DTO_CAST_TYPE, DTO_TYPE_FULL_UPDATE } from './annotations';
 import { decorateApiProperty } from './api-decorator';
 import { decorateClassValidators } from './class-validator';
 import { isAnnotatedWith, isScalar, isType } from './field-classifiers';
-import { DTO_CAST_TYPE, DTO_TYPE_FULL_UPDATE } from './annotations';
+import { ImportStatementParams, ParsedField, isApiResp } from './types';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
   String: 'string',
@@ -187,6 +187,17 @@ export const makeHelpers = ({
       isType(field as DMMF.Field) &&
       isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
 
+    if (field.documentation?.includes('%') && dtoType === 'create') {
+      const type = field.documentation
+        .split('\n')
+        .filter((item) => item.includes('%'))[0]
+        .replace(/%/g, '');
+
+      if (type) {
+        return field.isList ? `${type}[]` : type;
+      }
+    }
+
     return `${
       castType ||
       (field.kind === 'scalar'
@@ -237,11 +248,19 @@ export const makeHelpers = ({
 
   const fieldToEntityProp = (field: ParsedField) => {
     const castType = getRawCastType(field);
-    return `${decorateApiProperty(field, castType)}${field.name}${unless(
+    return `${decorateApiProperty(field, castType)}@Expose()\n${
+      field.name
+    }${unless(
       field.isRequired,
       '?',
       when(definiteAssignmentAssertion, '!'),
-    )}: ${fieldType(field, castType)} ${when(field.isNullable, ' | null')};\n`;
+    )}: ${fieldType(field, castType)} ${when(
+      field.apiProperties
+        ? field.apiProperties.find((property) => property.name === 'nullable')
+            ?.value === 'true'
+        : field.isNullable,
+      ' | null',
+    )};\n`;
   };
 
   const fieldsToEntityProps = (fields: ParsedField[]) =>
